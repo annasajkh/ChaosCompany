@@ -336,7 +336,7 @@ static class RoundManagerPatch
             if (inside)
             {
                 // Time to be silly
-                EnemyType? enemyType = SpawnRandomInsideEnemy(instance, targetPositionPrevious, 0, exclusion: ["girl"]);
+                EnemyType? enemyType = SpawnRandomInsideEnemy(instance, position: targetPositionPrevious, yRotation: 0, exclusion: ["girl"]);
 
                 if (enemyType is null)
                 {
@@ -349,7 +349,7 @@ static class RoundManagerPatch
             else
             {
                 // Time to be silly
-                EnemyType? enemySpawnedType = SpawnRandomOutsideEnemy(instance, targetPositionPrevious, exclusion: ["double"]);
+                EnemyType? enemySpawnedType = SpawnRandomOutsideEnemy(instance, position: targetPositionPrevious, exclusion: ["double"]);
 
                 if (enemySpawnedType is null)
                 {
