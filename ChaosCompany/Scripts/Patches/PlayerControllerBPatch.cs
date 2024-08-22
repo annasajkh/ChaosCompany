@@ -44,7 +44,7 @@ static class PlayerControllerBPatch
             return;
         }
 
-        if (Random.Range(0, 100) > 2)
+        if (Random.Range(0, 100) >= 2)
         {
             return;
         }
