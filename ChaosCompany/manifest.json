@@ -1,0 +1,9 @@
+{
+  "name": "ChaosCompany",
+  "version_number": "1.0.0",
+  "website_url": "https://github.com/annasajkh/ChaosCompany",
+  "description": "It's unpredictable chaos can you survive?",
+  "dependencies": [
+    "BepInEx-BepInExPack-5.4.2100"
+  ]
+}
