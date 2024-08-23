@@ -9,7 +9,7 @@ namespace ChaosCompany.Scripts.Patches;
 [HarmonyPatch(typeof(PlayerControllerB))]
 static class PlayerControllerBPatch
 {
-    static bool isAlreadySpawned;
+    public static bool isAlreadySpawned;
 
     [HarmonyPrefix]
     [HarmonyPatch("DamagePlayerServerRpc")]
@@ -34,6 +34,13 @@ static class PlayerControllerBPatch
             return;
         }
 
+        NetworkObject grabbedObjectResult;
+
+        if (!grabbedObject.TryGet(out grabbedObjectResult, NetworkManager.Singleton))
+        {
+            return;
+        }
+
         if (RoundManagerPatch.Instance.currentLevel.Enemies.Count == 0)
         {
             return;
@@ -44,21 +51,14 @@ static class PlayerControllerBPatch
             return;
         }
 
-        if (Random.Range(0, 100) >= 2)
-        {
-            return;
-        }
-
-        NetworkObject grabbedObjectResult;
-
-        if (!grabbedObject.TryGet(out grabbedObjectResult, NetworkManager.Singleton))
+        if (Random.Range(0, 100) > 1)
         {
             return;
         }
 
         if (__instance.isInsideFactory)
         {
-            EnemyType? enemySpawnedType = RoundManagerPatch.SpawnRandomInsideEnemy(instance: RoundManagerPatch.Instance, position: grabbedObjectResult.transform.position, yRotation: 0, exclusion: ["girl"]);
+            (EnemyType? enemySpawnedType, NetworkObjectReference? networkObjectReference) = RoundManagerPatch.SpawnRandomInsideEnemy(instance: RoundManagerPatch.Instance, position: grabbedObjectResult.transform.position, yRotation: 0, exclusion: ["girl"]);
 
             if (enemySpawnedType is null)
             {
@@ -71,7 +71,7 @@ static class PlayerControllerBPatch
         }
         else if (!__instance.isInsideFactory && !__instance.isInHangarShipRoom)
         {
-            EnemyType? enemySpawnedType = RoundManagerPatch.SpawnRandomOutsideEnemy(instance: RoundManagerPatch.Instance, position: grabbedObjectResult.transform.position, exclusion: ["worm", "double"]);
+            (EnemyType? enemySpawnedType, NetworkObjectReference? networkObjectReference) = RoundManagerPatch.SpawnRandomOutsideEnemy(instance: RoundManagerPatch.Instance, position: grabbedObjectResult.transform.position, exclusion: ["worm", "double"]);
 
             if (enemySpawnedType is null)
             {
