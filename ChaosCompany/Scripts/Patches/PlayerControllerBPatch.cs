@@ -41,6 +41,7 @@ static class PlayerControllerBPatch
             return;
         }
 
+
         if (RoundManagerPatch.Instance.currentLevel.Enemies.Count == 0)
         {
             return;
