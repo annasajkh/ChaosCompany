@@ -23,16 +23,15 @@ static class RoundManagerPatch
 {
     public static RoundManager? Instance { get; private set; }
     public static List<Timer> Timers { get; private set; } = new();
-    
+
     static Timer spawnEnemyTimer = new(waitTime: Random.Range(60 * 2, 60 * 2 + 30), oneshot: false);
     static EnemySpawnType[] spawnTypes = [EnemySpawnType.Inside, EnemySpawnType.Outside];
 
-    static Timer changeEnemyTypeTimer = new(waitTime: 60 * 4, oneshot: false);
-    
     public static NetworkObject? ChaoticEnemy { get; private set; }
+
     static Timer chaoticEnemySwitchTypeTimer = new(waitTime: 10, oneshot: false);
     static bool thereIsChaoticEnemy;
-
+     
     static int maxEnemyNumber = Random.Range(4, 7);
     static int enemyNumber = 0;
     static bool gameOver;
@@ -46,7 +45,6 @@ static class RoundManagerPatch
         thereIsChaoticEnemy = false;
         chaoticEnemySwitchTypeTimer = new(waitTime: 10, oneshot: false);
         ChaoticEnemy = null;
-        changeEnemyTypeTimer = new(waitTime: 60 * 4, oneshot: false);
         spawnEnemyTimer = new(waitTime: Random.Range(60 * 2, 60 * 2 + 30), oneshot: false);
         Timers.Clear();
         Instance = null;
@@ -478,6 +476,7 @@ static class RoundManagerPatch
             if (enemyTarget.thisNetworkObject is null)
             {
                 Plugin.Logger.LogError("enemyTarget.thisNetworkObject is null");
+                return null;
             }
 
             enemyTarget.thisNetworkObject.Despawn();
@@ -503,42 +502,6 @@ static class RoundManagerPatch
 
         Instance = __instance;
         Timers.Clear();
-
-        changeEnemyTypeTimer.OnTimeout += () =>
-        {
-            EnemyAI[] enemiesAis = UnityEngine.Object.FindObjectsOfType<EnemyAI>();
-
-            int enemyCount = enemiesAis.Length;
-
-            if (enemyCount == 0)
-            {
-                Plugin.Logger.LogError("Cannot change enemy, no enemy spawned yet");
-                return;
-            }
-
-            int enemyChangeIndex = Random.Range(0, enemiesAis.Length);
-
-            var selectedEnemyAI = enemiesAis[enemyChangeIndex];
-
-            if (selectedEnemyAI is null || selectedEnemyAI.thisNetworkObject is null)
-            {
-                Plugin.Logger.LogError("Selected enemy AI or its network object is null");
-                return;
-            }
-
-            if (ChaoticEnemy is not null)
-            {
-                if (selectedEnemyAI.thisNetworkObject == ChaoticEnemy)
-                {
-                    Plugin.Logger.LogError("Don't change chaotic enemy type it cause null reference exception");
-                    return;
-                }
-            }
-
-            SwitchToRandomEnemyTypeInside(selectedEnemyAI);
-
-            Plugin.Logger.LogError("Changing random enemy to a random type");
-        };
 
         chaoticEnemySwitchTypeTimer.OnTimeout += () =>
         {
@@ -595,6 +558,13 @@ static class RoundManagerPatch
                 
                 for (int i = 0; i < enemiesAis.Length; i++)
                 {
+                    if (enemiesAis[i].thisNetworkObject == ChaoticEnemy)
+                    {
+                        Plugin.Logger.LogError("Skip despawning chaotic enemy");
+
+                        continue;
+                    }
+
                     if (enemiesAis[i].thisNetworkObject.IsSpawned)
                     {
                         enemiesAis[i].thisNetworkObject.Despawn();
@@ -603,9 +573,10 @@ static class RoundManagerPatch
                     {
                         Plugin.Logger.LogError($"{enemiesAis[i].thisNetworkObject} was not spawned on network, so it could not be removed.");
                     }
-                }
 
-                Instance.SpawnedEnemies.Clear();
+
+                    Instance.SpawnedEnemies.Remove(enemiesAis[i]);
+                }
 
                 EnemyAINestSpawnObject[] enemyAINestSpawnObjects = UnityEngine.Object.FindObjectsByType<EnemyAINestSpawnObject>(FindObjectsSortMode.None);
 
@@ -782,7 +753,6 @@ static class RoundManagerPatch
         };
 
         Timers.Add(spawnEnemyTimer);
-        Timers.Add(changeEnemyTypeTimer);
         Timers.Add(chaoticEnemySwitchTypeTimer);
     }
     
@@ -815,8 +785,6 @@ static class RoundManagerPatch
             if (!Instance.begunSpawningEnemies)
             {
                 Plugin.Logger.LogError("Chaos is starting");
-
-                changeEnemyTypeTimer.Start();
 
                 spawnEnemyTimer.Start();
                 Instance.begunSpawningEnemies = true;

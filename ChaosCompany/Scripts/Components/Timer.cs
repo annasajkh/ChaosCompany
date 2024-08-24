@@ -33,7 +33,7 @@ public sealed class Timer
     /// <summary>
     /// Trigged when TimeLeft reached 0
     /// </summary>
-    public event Action OnTimeout;
+    public event Action? OnTimeout;
 
     /// <summary>
     /// The constructor
