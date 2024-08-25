@@ -23,6 +23,7 @@ static class RoundManagerPatch
 {
     public static RoundManager? Instance { get; private set; }
     public static List<Timer> Timers { get; private set; } = new();
+    public static bool gameOver;
 
     static Timer spawnEnemyTimer = new(waitTime: Random.Range(60 * 2, 60 * 2 + 30), oneshot: false);
     static EnemySpawnType[] spawnTypes = [EnemySpawnType.Inside, EnemySpawnType.Outside];
@@ -34,7 +35,6 @@ static class RoundManagerPatch
      
     static int maxEnemyNumber = Random.Range(4, 7);
     static int enemyNumber = 0;
-    static bool gameOver;
     static bool isChaoticEnemyAlreadyTryingToChange = false;
 
     static void Reset()
@@ -47,7 +47,6 @@ static class RoundManagerPatch
         ChaoticEnemy = null;
         spawnEnemyTimer = new(waitTime: Random.Range(60 * 2, 60 * 2 + 30), oneshot: false);
         Timers.Clear();
-        Instance = null;
     }
 
 
@@ -489,19 +488,14 @@ static class RoundManagerPatch
         return networkObjectRef;
     }
 
-    [HarmonyPostfix]
-    [HarmonyPatch("Start")]
-    static void StartPostfix(RoundManager __instance)
+
+    static void StartSpawning()
     {
-        if (!__instance.IsServer)
+        if (Instance is null)
         {
+            Plugin.Logger.LogError("Cannot spawn monster Instance is null");
             return;
         }
-
-        gameOver = false;
-
-        Instance = __instance;
-        Timers.Clear();
 
         chaoticEnemySwitchTypeTimer.OnTimeout += () =>
         {
@@ -555,7 +549,7 @@ static class RoundManagerPatch
             if (enemyNumber >= maxEnemyNumber)
             {
                 EnemyAI[] enemiesAis = UnityEngine.Object.FindObjectsOfType<EnemyAI>();
-                
+
                 for (int i = 0; i < enemiesAis.Length; i++)
                 {
                     if (enemiesAis[i].thisNetworkObject == ChaoticEnemy)
@@ -755,23 +749,24 @@ static class RoundManagerPatch
         Timers.Add(spawnEnemyTimer);
         Timers.Add(chaoticEnemySwitchTypeTimer);
     }
+
+    [HarmonyPostfix]
+    [HarmonyPatch("Start")]
+    static void StartPostfix(RoundManager __instance)
+    {
+        if (!__instance.IsServer)
+        {
+            return;
+        }
+        Instance = __instance;
+    }
     
     [HarmonyPrefix]
     [HarmonyPatch("Update")]
     static void UpdatePrefix()
     {
-        if (!gameOver)
+        if (Instance is not null && !gameOver && Instance.IsServer && Instance.dungeonFinishedGeneratingForAllPlayers && Instance.allEnemyVents.Length != 0)
         {
-            if (Instance is null)
-            {
-                return;
-            }
-
-            if (!Instance.IsServer || !Instance.dungeonFinishedGeneratingForAllPlayers || Instance.currentLevel.OutsideEnemies.Count == 0)
-            {
-                return;
-            }
-
             for (int i = Timers.Count - 1; i >= 0; i--)
             {
                 Timers[i].Update();
@@ -784,6 +779,7 @@ static class RoundManagerPatch
 
             if (!Instance.begunSpawningEnemies)
             {
+                StartSpawning();
                 Plugin.Logger.LogError("Chaos is starting");
 
                 spawnEnemyTimer.Start();
@@ -796,8 +792,8 @@ static class RoundManagerPatch
     [HarmonyPatch("DetectElevatorIsRunning")]
     static void DetectElevatorIsRunningPrefix()
     {
-        Plugin.Logger.LogError("Game over");
         gameOver = true;
+        Plugin.Logger.LogError("Game Ended");
         Reset();
     }
 
