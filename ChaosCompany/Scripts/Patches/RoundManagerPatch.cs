@@ -509,7 +509,8 @@ static class RoundManagerPatch
 
             if (ChaoticEnemy is null)
             {
-                Plugin.Logger.LogError("ChaoticEnemy is null");
+                Plugin.Logger.LogError("ChaoticEnemy died");
+                chaoticEnemySwitchTypeTimer.Stop();
                 return;
             }
 
@@ -572,7 +573,7 @@ static class RoundManagerPatch
 
                 (EnemyType? enemySpawnedType, NetworkObjectReference? networkObjectReference) = SpawnRandomInsideEnemy(Instance, position, y);
 
-                if (enemySpawnedType is null)
+                if (enemySpawnedType is null || networkObjectReference is null)
                 {
                     return;
                 }
@@ -581,10 +582,8 @@ static class RoundManagerPatch
 #if DEBUG
                 Plugin.Logger.LogError($"Spawning chaotic enemy");
 #endif
-                if (networkObjectReference is not null)
-                {
-                    ChaoticEnemy = networkObjectReference.GetValueOrDefault();
-                }
+
+                ChaoticEnemy = networkObjectReference.GetValueOrDefault();
 
                 chaoticEnemySwitchTypeTimer.Start();
                 thereIsChaoticEnemy = true;
