@@ -561,7 +561,7 @@ static class RoundManagerPatch
 
                 if (allEnemyVentsLength == 0)
                 {
-                    Plugin.Logger.LogError("Cannot spawn enemy on the vent because there is no vent available");
+                    Plugin.Logger.LogError("Cannot spawn chaotic enemy on the vent because there is no vent available");
                     return;
                 }
 
