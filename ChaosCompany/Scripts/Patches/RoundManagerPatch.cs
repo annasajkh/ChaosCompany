@@ -36,6 +36,7 @@ static class RoundManagerPatch
     static int maxEnemyNumber = Random.Range(4, 7);
     static int enemyNumber = 0;
     static bool isChaoticEnemyAlreadyTryingToChange = false;
+    static bool beginChaos;
 
     static void Reset()
     {
@@ -46,6 +47,7 @@ static class RoundManagerPatch
         chaoticEnemySwitchTypeTimer = new(waitTime: 10, oneshot: false);
         ChaoticEnemy = null;
         spawnEnemyTimer = new(waitTime: Random.Range(60 * 2, 60 * 2 + 30), oneshot: false);
+        beginChaos = false;
         Timers.Clear();
     }
 
@@ -548,48 +550,8 @@ static class RoundManagerPatch
         {
             if (enemyNumber >= maxEnemyNumber)
             {
-                EnemyAI[] enemiesAis = UnityEngine.Object.FindObjectsOfType<EnemyAI>();
-
-                for (int i = 0; i < enemiesAis.Length; i++)
-                {
-                    if (enemiesAis[i].thisNetworkObject == ChaoticEnemy)
-                    {
-                        Plugin.Logger.LogError("Skip despawning chaotic enemy");
-
-                        continue;
-                    }
-
-                    if (enemiesAis[i].thisNetworkObject.IsSpawned)
-                    {
-                        enemiesAis[i].thisNetworkObject.Despawn();
-                    }
-                    else
-                    {
-                        Plugin.Logger.LogError($"{enemiesAis[i].thisNetworkObject} was not spawned on network, so it could not be removed.");
-                    }
-
-
-                    Instance.SpawnedEnemies.Remove(enemiesAis[i]);
-                }
-
-                EnemyAINestSpawnObject[] enemyAINestSpawnObjects = UnityEngine.Object.FindObjectsByType<EnemyAINestSpawnObject>(FindObjectsSortMode.None);
-
-                for (int j = 0; j < enemyAINestSpawnObjects.Length; j++)
-                {
-                    NetworkObject component = enemyAINestSpawnObjects[j].gameObject.GetComponent<NetworkObject>();
-                    if (component != null && component.IsSpawned)
-                    {
-                        component.Despawn();
-                    }
-                    else
-                    {
-                        UnityEngine.Object.Destroy(enemyAINestSpawnObjects[j].gameObject);
-                    }
-                }
-
-                Plugin.Logger.LogInfo("Despawning enemies on the map");
-
-                enemyNumber = 0;
+                spawnEnemyTimer.Stop();
+                return;
             }
 
             // Time to be the sillies
@@ -777,13 +739,13 @@ static class RoundManagerPatch
                 }
             }
 
-            if (!Instance.begunSpawningEnemies)
+            if (!beginChaos)
             {
                 StartSpawning();
                 Plugin.Logger.LogError("Chaos is starting");
 
                 spawnEnemyTimer.Start();
-                Instance.begunSpawningEnemies = true;
+                beginChaos = true;
             }
         }
     }
