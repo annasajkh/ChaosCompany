@@ -47,12 +47,12 @@ static class PlayerControllerBPatch
             return;
         }
 
-        if (isAlreadySpawned)
+        if (isAlreadySpawned || __instance.isInElevator)
         {
             return;
         }
 
-        if (Random.Range(0, 100) > 1)
+        if (Random.Range(0, 100) == 0)
         {
             return;
         }

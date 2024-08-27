@@ -25,7 +25,6 @@ static class RoundManagerPatch
     public static List<Timer> Timers { get; private set; } = new();
     public static bool gameOver;
 
-
     static Timer spawnEnemyTimer = new(waitTime: Random.Range(60 * 2, 60 * 2 + 30), oneshot: false);
     static EnemySpawnType[] spawnTypes = [EnemySpawnType.Inside, EnemySpawnType.Outside];
 
@@ -348,7 +347,7 @@ static class RoundManagerPatch
             else
             {
                 // Time to be silly
-                (EnemyType? enemySpawnedType, NetworkObjectReference? networkObjectReference) = SpawnRandomEnemy(instance, inside: false, position: targetPositionPrevious, exclusion: ["double"]);
+                (EnemyType? enemySpawnedType, NetworkObjectReference? networkObjectReference) = SpawnRandomEnemy(instance, inside: false, position: targetPositionPrevious, exclusion: ["mech", "double"]);
 
                 if (enemySpawnedType is null)
                 {
@@ -440,11 +439,11 @@ static class RoundManagerPatch
 
             if (networkObject is null)
             {
-                (enemySpawnedType, networkObjectReference) = SpawnRandomEnemy(Instance, inside: false, position: enemyTarget.thisNetworkObject.transform.position, exclusion: ["worm", "double", "redlocust"]);
+                (enemySpawnedType, networkObjectReference) = SpawnRandomEnemy(Instance, inside: false, position: enemyTarget.thisNetworkObject.transform.position, exclusion: ["mech", "worm", "double", "redlocust"]);
             }
             else
             {
-                (enemySpawnedType, networkObjectReference) = SpawnRandomEnemy(Instance, inside: false, position: networkObject.transform.position, exclusion: ["worm", "double", "redlocust"]);
+                (enemySpawnedType, networkObjectReference) = SpawnRandomEnemy(Instance, inside: false, position: networkObject.transform.position, exclusion: ["mech", "worm", "double", "redlocust"]);
 
             }
 
@@ -642,7 +641,7 @@ static class RoundManagerPatch
                         }
                         else
                         {
-                            (EnemyType? enemySpawnedType, NetworkObjectReference? networkObjectReference) = SpawnRandomEnemy(Instance, inside: false, position, exclusion: ["worm", "double"]);
+                            (EnemyType? enemySpawnedType, NetworkObjectReference? networkObjectReference) = SpawnRandomEnemy(Instance, inside: false, position, exclusion: ["mech", "worm", "double"]);
 
                             if (enemySpawnedType is null)
                             {
