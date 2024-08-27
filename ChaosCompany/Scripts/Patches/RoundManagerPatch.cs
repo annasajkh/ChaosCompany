@@ -32,6 +32,7 @@ static class RoundManagerPatch
 
     static Timer chaoticEnemySwitchTypeTimer = new(waitTime: 10, oneshot: false);
     static bool thereIsChaoticEnemy;
+    static int numberOfTriesOfSpawningRandomEnemyNearPlayer = 6;
      
     static int maxEnemyNumber = Random.Range(4, 7);
     static int enemyNumber = 0;
@@ -48,6 +49,7 @@ static class RoundManagerPatch
         ChaoticEnemy = null;
         spawnEnemyTimer = new(waitTime: Random.Range(60 * 2, 60 * 2 + 30), oneshot: false);
         beginChaos = false;
+        numberOfTriesOfSpawningRandomEnemyNearPlayer = 6;
         Timers.Clear();
     }
 
@@ -260,6 +262,9 @@ static class RoundManagerPatch
 
     public static void SpawnRandomEnemyNearPlayer(RoundManager instance, bool inside)
     {
+#if DEBUG
+        Plugin.Logger.LogError($"Trying to spawn enemy near player attempt {numberOfTriesOfSpawningRandomEnemyNearPlayer}");
+#endif
         int allPlayerLength = instance.playersManager.allPlayerScripts.Length;
 
         if (allPlayerLength == 0)
@@ -294,6 +299,13 @@ static class RoundManagerPatch
 #endif
             if (randomAlivePlayer.GetComponent<PlayerControllerB>().deadBody != null || randomAlivePlayer.GetComponent<PlayerControllerB>().isInsideFactory != inside)
             {
+                // try it with other player
+                if (numberOfTriesOfSpawningRandomEnemyNearPlayer != 0)
+                {
+                    SpawnRandomEnemyNearPlayer(instance, inside);
+                    numberOfTriesOfSpawningRandomEnemyNearPlayer--;
+                }
+
                 return;
             }
             Vector3 targetPositionNow = randomAlivePlayer.GetComponent<NfgoPlayer>().Position;
@@ -314,6 +326,12 @@ static class RoundManagerPatch
 
             if (Vector3.Distance(targetPositionPrevious, targetPositionNow) <= distanceToPlayer)
             {
+                // try it with other player
+                if (numberOfTriesOfSpawningRandomEnemyNearPlayer != 0)
+                {
+                    SpawnRandomEnemyNearPlayer(instance, inside);
+                    numberOfTriesOfSpawningRandomEnemyNearPlayer--;
+                }
                 return;
             }
 
@@ -331,6 +349,12 @@ static class RoundManagerPatch
             // Oh no the police is coming quick everyone hide your silliness
             if (otherPlayerNear)
             {
+                // try it with other player
+                if (numberOfTriesOfSpawningRandomEnemyNearPlayer != 0)
+                {
+                    SpawnRandomEnemyNearPlayer(instance, inside);
+                    numberOfTriesOfSpawningRandomEnemyNearPlayer--;
+                }
                 return;
             }
 
@@ -368,6 +392,8 @@ static class RoundManagerPatch
                 Plugin.Logger.LogError($"Spawning {enemySpawnedType} outside the facility near a player");
 #endif
             }
+
+            numberOfTriesOfSpawningRandomEnemyNearPlayer = 6;
         };
 
         Timers.Add(spawnEnemyWaitTimer);
@@ -556,7 +582,7 @@ static class RoundManagerPatch
             }
 
             // Time to be the sillies
-            if (Random.Range(0.0f, 1.0f) <= 0.5f && !thereIsChaoticEnemy)
+            if (!thereIsChaoticEnemy)
             {
                 int allEnemyVentsLength = Instance.allEnemyVents.Length;
 
@@ -605,14 +631,13 @@ static class RoundManagerPatch
 
             try
             {
-                enemyNumber++;
-
                 switch (spawnType)
                 {
                     case EnemySpawnType.Inside:
-                        if (Random.Range(0, 100) <= 50)
+                        if (Random.Range(0, 100) <= 20)
                         {
                             SpawnRandomEnemyNearPlayer(Instance, inside: true);
+                            enemyNumber++;
                             return;
                         }
 
@@ -659,12 +684,15 @@ static class RoundManagerPatch
                             Plugin.Logger.LogError($"Spawning {enemySpawnedType} inside");
 #endif
                         }
+
+                        enemyNumber++;
                         break;
 
                     case EnemySpawnType.Outside:
-                        if (Random.Range(0, 100) <= 50)
+                        if (Random.Range(0, 100) <= 20)
                         {
                             SpawnRandomEnemyNearPlayer(Instance, inside: false);
+                            enemyNumber++;
                             return;
                         }
 
@@ -698,6 +726,7 @@ static class RoundManagerPatch
 #if DEBUG
                         Plugin.Logger.LogError($"Spawning {outsideEnemyToSpawn.enemyType} Outside");
 #endif
+                        enemyNumber++;
                         break;
                 }
             }
