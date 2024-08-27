@@ -52,7 +52,7 @@ static class PlayerControllerBPatch
             return;
         }
 
-        if (Random.Range(0, 100) == 0)
+        if (Random.Range(0, 100) != 0)
         {
             return;
         }
