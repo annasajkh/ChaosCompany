@@ -25,6 +25,7 @@ static class RoundManagerPatch
     public static List<Timer> Timers { get; private set; } = new();
     public static bool gameOver;
 
+    
     static Timer spawnEnemyTimer = new(waitTime: Random.Range(60 * 2, 60 * 2 + 30), oneshot: false);
     static EnemySpawnType[] spawnTypes = [EnemySpawnType.Inside, EnemySpawnType.Outside];
 
@@ -47,8 +48,7 @@ static class RoundManagerPatch
         thereIsChaoticEnemy = false;
         chaoticEnemySwitchTypeTimer = new(waitTime: 10, oneshot: false);
         ChaoticEnemy = null;
-        // Random.Range(60 * 2, 60 * 2 + 30)
-        spawnEnemyTimer = new(waitTime: 70, oneshot: false);
+        spawnEnemyTimer = new(waitTime: Random.Range(60 * 2, 60 * 2 + 30), oneshot: false);
         beginChaos = false;
         numberOfTriesOfSpawningRandomEnemyNearPlayer = 6;
         Timers.Clear();
@@ -96,8 +96,9 @@ static class RoundManagerPatch
             foreach (var enemyExclusionName in exclusion)
             {
                 string enemySpawnedName = enemyToSpawn.enemyType.ToString().ToLower().Trim();
+                string enemyExclusionNameTemp = enemyExclusionName.ToLower().Trim();
 
-                if (enemySpawnedName.Contains(enemyExclusionName.ToLower().Trim()))
+                if (enemySpawnedName.Contains(enemyExclusionNameTemp) || enemySpawnedName == enemyExclusionNameTemp)
                 {
 #if DEBUG
                     Plugin.Logger.LogError($"Prevent spawning {enemySpawnedName}");
@@ -218,11 +219,10 @@ static class RoundManagerPatch
 
     public static void SpawnRandomEnemyNearPlayer(RoundManager instance, bool inside)
     {
-        Plugin.Logger.LogError("Trying to spawn random enemy near a player");
-
 #if DEBUG
         Plugin.Logger.LogError($"Trying to spawn enemy near player attempt {numberOfTriesOfSpawningRandomEnemyNearPlayer}");
 #endif
+
         int allPlayerLength = instance.playersManager.allPlayerScripts.Length;
 
         if (allPlayerLength == 0)
@@ -278,7 +278,7 @@ static class RoundManagerPatch
             Plugin.Logger.LogError($"Distance to the previous player position is {Vector3.Distance(targetPositionPrevious, targetPositionNow)}");
 #endif
 
-            int distanceToPlayer = 15;
+            int distanceToPlayer = 20;
 
             if (teleportChaoticEnemyNearPlayer)
             {
@@ -334,7 +334,7 @@ static class RoundManagerPatch
                 }
 
                 // Time to be silly
-                (EnemyType? enemySpawnedType, NetworkObjectReference? networkObjectReference) = SpawnRandomEnemy(instance, inside: true, position: targetPositionPrevious, exclusion: ["girl"]);
+                (EnemyType? enemySpawnedType, NetworkObjectReference? networkObjectReference) = SpawnRandomEnemy(instance, inside: true, position: targetPositionPrevious, exclusion: ["DressGirl"]);
 
                 if (enemySpawnedType is null)
                 {
@@ -359,6 +359,7 @@ static class RoundManagerPatch
 #endif
             }
 
+            // reset numberOfTriesOfSpawningRandomEnemyNearPlayer
             numberOfTriesOfSpawningRandomEnemyNearPlayer = 6;
         };
 
@@ -402,17 +403,18 @@ static class RoundManagerPatch
 
         NetworkObjectReference? networkObjectRef = null;
 
+        // check if the enemy target is inside enemy
         if (Instance.currentLevel.Enemies.Any(enemy => enemy.enemyType == enemyTarget.enemyType))
         {
             (EnemyType? enemySpawnedType, NetworkObjectReference? networkObjectReference) = (null, null);
 
             if (networkObject is null)
             {
-                (enemySpawnedType, networkObjectReference) = SpawnRandomEnemy(Instance, inside: true, position: enemyTarget.thisNetworkObject.transform.position, exclusion: ["girl", "nut"]);
+                (enemySpawnedType, networkObjectReference) = SpawnRandomEnemy(Instance, inside: true, position: enemyTarget.thisNetworkObject.transform.position, exclusion: ["DressGirl", "Nutcracker"]);
             }
             else
             {
-                (enemySpawnedType, networkObjectReference) = SpawnRandomEnemy(Instance, inside: true, position: networkObject.transform.position, exclusion: ["girl", "nut"]);
+                (enemySpawnedType, networkObjectReference) = SpawnRandomEnemy(Instance, inside: true, position: networkObject.transform.position, exclusion: ["DressGirl", "Nutcracker"]);
             }
 
             if (enemySpawnedType is null)
@@ -714,6 +716,9 @@ static class RoundManagerPatch
     [HarmonyPatch("Start")]
     static void StartPostfix(RoundManager __instance)
     {
+        Plugin.Logger.LogError("Round Manager start method get called");
+        Reset();
+
         if (!__instance.IsServer)
         {
             return;

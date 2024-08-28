@@ -59,7 +59,7 @@ static class PlayerControllerBPatch
 
         if (__instance.isInsideFactory)
         {
-            (EnemyType? enemySpawnedType, NetworkObjectReference? networkObjectReference) = RoundManagerPatch.SpawnRandomEnemy(instance: RoundManagerPatch.Instance, inside: true, position: grabbedObjectResult.transform.position, exclusion: ["girl"]);
+            (EnemyType? enemySpawnedType, NetworkObjectReference? networkObjectReference) = RoundManagerPatch.SpawnRandomEnemy(instance: RoundManagerPatch.Instance, inside: true, position: grabbedObjectResult.transform.position, exclusion: ["dressedgirl"]);
 
             if (enemySpawnedType is null)
             {
