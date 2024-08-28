@@ -410,11 +410,11 @@ static class RoundManagerPatch
 
             if (networkObject is null)
             {
-                (enemySpawnedType, networkObjectReference) = SpawnRandomEnemy(Instance, inside: true, position: enemyTarget.thisNetworkObject.transform.position, exclusion: ["DressGirl", "Nutcracker"]);
+                (enemySpawnedType, networkObjectReference) = SpawnRandomEnemy(Instance, inside: true, position: enemyTarget.thisNetworkObject.transform.position, exclusion: ["DressGirl", "Nutcracker", "Spider"]);
             }
             else
             {
-                (enemySpawnedType, networkObjectReference) = SpawnRandomEnemy(Instance, inside: true, position: networkObject.transform.position, exclusion: ["DressGirl", "Nutcracker"]);
+                (enemySpawnedType, networkObjectReference) = SpawnRandomEnemy(Instance, inside: true, position: networkObject.transform.position, exclusion: ["DressGirl", "Nutcracker", "Spider"]);
             }
 
             if (enemySpawnedType is null)
