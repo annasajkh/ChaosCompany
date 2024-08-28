@@ -716,13 +716,14 @@ static class RoundManagerPatch
     [HarmonyPatch("Start")]
     static void StartPostfix(RoundManager __instance)
     {
-        Plugin.Logger.LogError("Round Manager start method get called");
-        Reset();
-
-        if (!__instance.IsServer)
+        if (!NetworkManager.Singleton.IsServer)
         {
             return;
         }
+
+        Plugin.Logger.LogError("Round Manager start method get called");
+        Reset();
+
         Instance = __instance;
     }
     
@@ -757,9 +758,13 @@ static class RoundManagerPatch
     [HarmonyPatch("DetectElevatorIsRunning")]
     static void DetectElevatorIsRunningPrefix()
     {
+        if (!NetworkManager.Singleton.IsServer)
+        {
+            return;
+        }
+
         gameOver = true;
         Plugin.Logger.LogError("Game Ended");
         Reset();
     }
-
 }

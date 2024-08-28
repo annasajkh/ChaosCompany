@@ -1,4 +1,5 @@
 ﻿using HarmonyLib;
+using Unity.Netcode;
 using UnityEngine;
 
 namespace ChaosCompany.Scripts.Patches;
@@ -7,9 +8,16 @@ namespace ChaosCompany.Scripts.Patches;
 static class TimeOfDayPatch
 {
     [HarmonyPrefix]
-    [HarmonyPatch("Start")]
-    static void StartPrefix(TimeOfDay __instance)
+    [HarmonyPatch("Awake")]
+    static void AwakePrefix(TimeOfDay __instance)
     {
+        if (!NetworkManager.Singleton.IsServer)
+        {
+            return;
+        }
+
+        __instance.quotaVariables.increaseSteepness = Random.Range(4, 7);
+        __instance.quotaVariables.deadlineDaysAmount = Random.Range(4, 7);
         __instance.globalTimeSpeedMultiplier = Random.Range(0.25f, 1.0f);
     }
 }

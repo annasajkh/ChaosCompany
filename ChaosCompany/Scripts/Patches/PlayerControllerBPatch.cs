@@ -15,6 +15,11 @@ static class PlayerControllerBPatch
     [HarmonyPatch("DamagePlayerServerRpc")]
     static void DamagePlayerServerRpcPrefix(ref int damageNumber,ref int newHealthAmount)
     {
+        if (!NetworkManager.Singleton.IsServer)
+        {
+            return;
+        }
+
         damageNumber = (int)(damageNumber  * Random.Range(0.25f, 1.25f));
     }
 
@@ -22,6 +27,11 @@ static class PlayerControllerBPatch
     [HarmonyPatch("StartSinkingServerRpc")]
     static void StartSinkingServerRpc(ref float sinkingSpeed, ref int audioClipIndex)
     {
+        if (!NetworkManager.Singleton.IsServer)
+        {
+            return;
+        }
+
         sinkingSpeed *= Random.Range(0.25f, 2f);
     }
 
