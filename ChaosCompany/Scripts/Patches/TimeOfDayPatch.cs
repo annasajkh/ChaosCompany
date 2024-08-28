@@ -7,6 +7,8 @@ namespace ChaosCompany.Scripts.Patches;
 [HarmonyPatch(typeof(TimeOfDay))]
 static class TimeOfDayPatch
 {
+    public static TimeOfDay? Instance { get; set; }
+
     [HarmonyPrefix]
     [HarmonyPatch("Awake")]
     static void AwakePrefix(TimeOfDay __instance)
@@ -16,7 +18,14 @@ static class TimeOfDayPatch
             return;
         }
 
-        __instance.quotaVariables.deadlineDaysAmount = Random.Range(4, 7);
+        // my precious little hack
+        if (Instance == null)
+        {
+            __instance.quotaVariables.deadlineDaysAmount = Random.Range(4, 7);
+        }
+
+        Instance = __instance;
+
         __instance.globalTimeSpeedMultiplier = Random.Range(0.25f, 1.0f);
     }
 }

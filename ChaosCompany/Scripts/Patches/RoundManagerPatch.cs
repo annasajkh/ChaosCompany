@@ -763,6 +763,12 @@ static class RoundManagerPatch
             return;
         }
 
+        // this is a hack but it's fine, i'm just tired
+        if (TimeOfDayPatch.Instance is not null)
+        {
+            TimeOfDayPatch.Instance.quotaVariables.deadlineDaysAmount = Random.Range(4, 7);
+        }
+
         gameOver = true;
         Plugin.Logger.LogError("Game Ended");
         Reset();
