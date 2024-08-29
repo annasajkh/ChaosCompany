@@ -8,7 +8,7 @@ public sealed class Timer
     /// <summary>
     /// if the timer finished
     /// </summary>
-    public bool Finished { get; private set; }
+    public bool Finished { get; set; }
 
     /// <summary>
     /// The time the timer have to wait before it time out

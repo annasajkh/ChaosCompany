@@ -1,5 +1,6 @@
 ﻿// Ignore Spelling: Teleport
 
+using ChaosCompany.Scripts.Entities;
 using Dissonance.Integrations.Unity_NFGO;
 using GameNetcodeStuff;
 using HarmonyLib;
@@ -27,34 +28,27 @@ static class RoundManagerPatch
     public static List<Timer> Timers { get; private set; } = new();
     public static bool gameOver;
 
-    // temp
-    // Random.Range(60 * 2, 60 * 2 + 30)
-    static Timer spawnEnemyTimer = new(waitTime: 20, oneshot: false);
+    static Timer spawnEnemyTimer = new(waitTime: Random.Range(60 * 2, 60 * 2 + 30), oneshot: false);
     static EnemySpawnType[] spawnTypes = [EnemySpawnType.Inside, EnemySpawnType.Outside];
 
-    public static NetworkObject? ChaoticEnemy { get; private set; }
+    static List<ChaoticEnemy> chaoticEnemies = new();
 
-    static Timer chaoticEnemySwitchTypeTimer = new(waitTime: 10, oneshot: false);
-    static bool thereIsChaoticEnemy;
     static int numberOfTriesOfSpawningRandomEnemyNearPlayer = 6;
-
     static int maxEnemyNumber = Random.Range(4, 7);
     static int enemyNumber = 0;
-    static bool isChaoticEnemyAlreadyTryingToChange = false;
+    static int maxChaoticEnemySpawn = 2;
+    static bool isChaoticEnemyAlreadyTryingToChange;
     static bool beginChaos;
 
     static void Reset()
     {
         PlayerControllerBPatch.isAlreadySpawned = false;
+        chaoticEnemies.Clear();
         enemyNumber = 0;
         maxEnemyNumber = Random.Range(4, 7);
-        thereIsChaoticEnemy = false;
-        chaoticEnemySwitchTypeTimer = new(waitTime: 10, oneshot: false);
-        ChaoticEnemy = null;
+        maxChaoticEnemySpawn = 2;
 
-        // temp
-        // Random.Range(60 * 2, 60 * 2 + 30)
-        spawnEnemyTimer = new(waitTime: 20, oneshot: false);
+        spawnEnemyTimer = new(waitTime: Random.Range(60 * 2, 60 * 2 + 30), oneshot: false);
         beginChaos = false;
         numberOfTriesOfSpawningRandomEnemyNearPlayer = 6;
         Timers.Clear();
@@ -103,7 +97,7 @@ static class RoundManagerPatch
                 if (enemySpawnedName.Contains(enemyExclusionNameTemp) || enemySpawnedName == enemyExclusionNameTemp)
                 {
 #if DEBUG
-                    Plugin.Logger.LogError($"Prevent spawning {enemySpawnedName}");
+                    Plugin.Logger.LogError($"Prevent spawning {enemyToSpawn.enemyType.enemyName}");
 #endif
                     containExclusionEnemy = true;
                     break;
@@ -133,7 +127,7 @@ static class RoundManagerPatch
                     if (enemySpawnedName.Contains(enemyExclusionName.ToLower().Trim()))
                     {
 #if DEBUG
-                        Plugin.Logger.LogError($"Prevent spawning {enemySpawnedName}");
+                        Plugin.Logger.LogError($"Prevent spawning {enemyToSpawn.enemyType.enemyName}");
 #endif
                         containExclusionEnemy = true;
                         break;
@@ -324,7 +318,7 @@ static class RoundManagerPatch
             else
             {
                 // Time to be silly
-                (EnemyType? enemySpawnedType, NetworkObjectReference? networkObjectReference) = SpawnRandomEnemy(instance, inside: false, position: targetPositionPrevious, exclusion: ["mech", "double"]);
+                (EnemyType? enemySpawnedType, NetworkObjectReference? networkObjectReference) = SpawnRandomEnemy(instance, inside: false, position: targetPositionPrevious, exclusion: ["mech", "worm", "double"]);
 
                 if (enemySpawnedType is null)
                 {
@@ -386,11 +380,11 @@ static class RoundManagerPatch
 
         if (networkObject is null)
         {
-            (enemySpawnedType, networkObjectReference) = SpawnRandomEnemy(Instance, inside: inside, position: enemyTarget.thisNetworkObject.transform.position, exclusion: ["mech", "worm", "double", "redlocust", "DressGirl", "Nutcracker", "Spider"]);
+            (enemySpawnedType, networkObjectReference) = SpawnRandomEnemy(Instance, inside: inside, position: enemyTarget.thisNetworkObject.transform.position, exclusion: ["double", "redlocust", "DressGirl", "Nutcracker", "Spider"]);
         }
         else
         {
-            (enemySpawnedType, networkObjectReference) = SpawnRandomEnemy(Instance, inside: inside, position: networkObject.transform.position, exclusion: ["mech", "worm", "double", "redlocust", "DressGirl", "Nutcracker", "Spider"]);
+            (enemySpawnedType, networkObjectReference) = SpawnRandomEnemy(Instance, inside: inside, position: networkObject.transform.position, exclusion: ["double", "redlocust", "DressGirl", "Nutcracker", "Spider"]);
         }
 
         if (enemySpawnedType is null)
@@ -406,7 +400,7 @@ static class RoundManagerPatch
         }
 
 #if DEBUG
-        Plugin.Logger.LogError($"Changing {enemyTarget.enemyType} to {enemySpawnedType}");
+        Plugin.Logger.LogError($"Changing {enemyTarget.enemyType.enemyName} to {enemySpawnedType.enemyName}");
 #endif
 
         NetworkObjectReference? networkObjectRef = networkObjectReference;
@@ -430,6 +424,25 @@ static class RoundManagerPatch
         return networkObjectRef;
     }
 
+    static void SpawnChaoticEnemy()
+    {
+        if (Instance is null)
+        {
+            Plugin.Logger.LogError("Instance is null");
+            return;
+        }
+
+        ChaoticEnemy chaoticEnemy = new ChaoticEnemy(Instance, inside: Random.Range(0.0f, 1.0f) > 0.2f);
+
+        if (chaoticEnemy.Spawn() is null)
+        {
+            Plugin.Logger.LogError("Cannot spawn chaotic enemy");
+            return;
+        }
+
+        chaoticEnemies.Add(chaoticEnemy);
+    }
+
     static void StartSpawning()
     {
         Plugin.Logger.LogError("Start spawning enemies");
@@ -439,52 +452,6 @@ static class RoundManagerPatch
             Plugin.Logger.LogError("Cannot spawn monster Instance is null");
             return;
         }
-
-        chaoticEnemySwitchTypeTimer.OnTimeout += () =>
-        {
-            if (isChaoticEnemyAlreadyTryingToChange)
-            {
-                isChaoticEnemyAlreadyTryingToChange = !isChaoticEnemyAlreadyTryingToChange;
-                return;
-            }
-
-            if (ChaoticEnemy is null)
-            {
-                Plugin.Logger.LogError("ChaoticEnemy died");
-                chaoticEnemySwitchTypeTimer.Stop();
-                return;
-            }
-
-            if (ChaoticEnemy.gameObject is null)
-            {
-                Plugin.Logger.LogError("ChaoticEnemy's gameObject is null");
-                return;
-            }
-
-            Plugin.Logger.LogError("Chaotic Enemy changing");
-
-            var enemyAIComponent = ChaoticEnemy.gameObject.GetComponent<EnemyAI>();
-            if (enemyAIComponent is null)
-            {
-                Plugin.Logger.LogError("ChaoticEnemy does not have an EnemyAI component");
-                return;
-            }
-
-            NetworkObjectReference? networkObjectReference = null;
-
-            networkObjectReference = SwitchToRandomEnemyType(enemyAIComponent, inside: true, ChaoticEnemy);
-
-            if (networkObjectReference is not null)
-            {
-                ChaoticEnemy = networkObjectReference.GetValueOrDefault();
-            }
-            else
-            {
-                Plugin.Logger.LogError("networkObjectReference is null after switching enemy type");
-            }
-
-            isChaoticEnemyAlreadyTryingToChange = !isChaoticEnemyAlreadyTryingToChange;
-        };
 
 
         spawnEnemyTimer.OnTimeout += () =>
@@ -496,38 +463,10 @@ static class RoundManagerPatch
             }
 
             // spawn the silliest
-            if (!thereIsChaoticEnemy)
+            if (maxChaoticEnemySpawn != 0)
             {
-                int allEnemyVentsLength = Instance.allEnemyVents.Length;
-
-                if (allEnemyVentsLength == 0)
-                {
-                    Plugin.Logger.LogError("Cannot spawn chaotic enemy on the vent because there is no vent available");
-                    return;
-                }
-
-                EnemyVent ventToSpawnEnemy = Instance.allEnemyVents[Random.Range(0, allEnemyVentsLength)];
-
-                Vector3 position = ventToSpawnEnemy.floorNode.position;
-                float y = ventToSpawnEnemy.floorNode.eulerAngles.y;
-
-                (EnemyType? enemySpawnedType, NetworkObjectReference? networkObjectReference) = SpawnRandomEnemy(Instance, inside: true, position, yRotation: y, exclusion: ["DressGirl", "Nutcracker", "Spider"]);
-
-                if (enemySpawnedType is null || networkObjectReference is null)
-                {
-                    return;
-                }
-
-                ventToSpawnEnemy.OpenVentClientRpc();
-#if DEBUG
-                Plugin.Logger.LogError($"Spawning chaotic enemy");
-#endif
-
-                ChaoticEnemy = networkObjectReference.GetValueOrDefault();
-
-                chaoticEnemySwitchTypeTimer.Start();
-                thereIsChaoticEnemy = true;
-                return;
+                SpawnChaoticEnemy();
+                maxChaoticEnemySpawn--;
             }
 
             EnemySpawnType spawnType;
@@ -638,7 +577,7 @@ static class RoundManagerPatch
 
                         Instance.SpawnEnemyGameObject(position, 0, -1, outsideEnemyToSpawn.enemyType);
 #if DEBUG
-                        Plugin.Logger.LogError($"Spawning {outsideEnemyToSpawn.enemyType} Outside");
+                        Plugin.Logger.LogError($"Spawning {outsideEnemyToSpawn.enemyType.enemyName} Outside");
 #endif
                         enemyNumber++;
                         break;
@@ -651,7 +590,6 @@ static class RoundManagerPatch
         };
 
         Timers.Add(spawnEnemyTimer);
-        Timers.Add(chaoticEnemySwitchTypeTimer);
     }
 
     [HarmonyPostfix]
@@ -682,6 +620,28 @@ static class RoundManagerPatch
                 if (Timers[i].Finished)
                 {
                     Timers.RemoveAt(i);
+                }
+            }
+
+            for (int i = chaoticEnemies.Count - 1; i >= 0; i--)
+            {
+                if (chaoticEnemies[i].Dead)
+                {
+                    // chaotic enemy can die but they will get reincarnated with different form at different time
+                    Timer chaoticEnemyRespawnCooldown = new Timer(waitTime: Random.Range(60 * 2, 60 * 2 + 30), oneshot: true);
+
+                    chaoticEnemyRespawnCooldown.OnTimeout += () =>
+                    {
+#if DEBUG
+                        Plugin.Logger.LogError("An chaotic enemy get reincarnated");
+#endif
+                        SpawnChaoticEnemy();
+                    };
+
+                    chaoticEnemyRespawnCooldown.Start();
+                    Timers.Add(chaoticEnemyRespawnCooldown);
+
+                    chaoticEnemies.RemoveAt(i);
                 }
             }
 
