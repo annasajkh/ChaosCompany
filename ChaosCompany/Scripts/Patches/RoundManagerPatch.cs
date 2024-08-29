@@ -1,4 +1,6 @@
-﻿using Dissonance.Integrations.Unity_NFGO;
+﻿// Ignore Spelling: Teleport
+
+using Dissonance.Integrations.Unity_NFGO;
 using GameNetcodeStuff;
 using HarmonyLib;
 using System;
@@ -25,8 +27,9 @@ static class RoundManagerPatch
     public static List<Timer> Timers { get; private set; } = new();
     public static bool gameOver;
 
-    
-    static Timer spawnEnemyTimer = new(waitTime: Random.Range(60 * 2, 60 * 2 + 30), oneshot: false);
+    // temp
+    // Random.Range(60 * 2, 60 * 2 + 30)
+    static Timer spawnEnemyTimer = new(waitTime: 20, oneshot: false);
     static EnemySpawnType[] spawnTypes = [EnemySpawnType.Inside, EnemySpawnType.Outside];
 
     public static NetworkObject? ChaoticEnemy { get; private set; }
@@ -48,16 +51,15 @@ static class RoundManagerPatch
         thereIsChaoticEnemy = false;
         chaoticEnemySwitchTypeTimer = new(waitTime: 10, oneshot: false);
         ChaoticEnemy = null;
-        spawnEnemyTimer = new(waitTime: Random.Range(60 * 2, 60 * 2 + 30), oneshot: false);
+
+        // temp
+        // Random.Range(60 * 2, 60 * 2 + 30)
+        spawnEnemyTimer = new(waitTime: 20, oneshot: false);
         beginChaos = false;
         numberOfTriesOfSpawningRandomEnemyNearPlayer = 6;
         Timers.Clear();
     }
 
-    /// <summary>
-    /// Spawn random enemy from a list 
-    /// </summary>
-    /// <returns>the enemy type if the enemy can't be spawn it return null</returns>
     public static (EnemyType?, NetworkObjectReference?) SpawnRandomEnemy(RoundManager instance, bool inside, Vector3 position, float yRotation = 0, List<string>? exclusion = null)
     {
         Plugin.Logger.LogError("Trying to spawn random enemy");
@@ -155,11 +157,6 @@ static class RoundManagerPatch
         }
     }
 
-    /// <summary>
-    /// Get random alive player
-    /// </summary>
-    /// <param name="inside">should search be inside or outside</param>
-    /// <returns>return random alive player</returns>
     public static GameObject? GetRandomAlivePlayer(RoundManager instance, bool inside)
     {
         Plugin.Logger.LogError("Trying to get random alive player");
@@ -209,7 +206,7 @@ static class RoundManagerPatch
         }
 
         // if there is no player meet the condition just return null
-        if (randomPlayer.GetComponent<PlayerControllerB>().isInsideFactory == inside || randomPlayer.GetComponent<PlayerControllerB>().deadBody == null)
+        if (randomPlayer.GetComponent<PlayerControllerB>().isInsideFactory != inside && randomPlayer.GetComponent<PlayerControllerB>().deadBody != null)
         {
             return null;
         }
@@ -217,12 +214,8 @@ static class RoundManagerPatch
         return randomPlayer;
     }
 
-    public static void SpawnRandomEnemyNearPlayer(RoundManager instance, bool inside)
+    public static void SpawnRandomEnemyNearRandomPlayer(RoundManager instance, bool inside)
     {
-#if DEBUG
-        Plugin.Logger.LogError($"Trying to spawn enemy near player attempt {numberOfTriesOfSpawningRandomEnemyNearPlayer}");
-#endif
-
         int allPlayerLength = instance.playersManager.allPlayerScripts.Length;
 
         if (allPlayerLength == 0)
@@ -251,7 +244,6 @@ static class RoundManagerPatch
         // wait 10 second before getting the targeted player new position
         spawnEnemyWaitTimer.OnTimeout += () =>
         {
-            bool teleportChaoticEnemyNearPlayer = Random.Range(0.0f, 1.0f) > 0.5f;
 
 #if DEBUG
             Plugin.Logger.LogError("Checking Target");
@@ -262,7 +254,7 @@ static class RoundManagerPatch
                 // try it with other player
                 if (numberOfTriesOfSpawningRandomEnemyNearPlayer != 0)
                 {
-                    SpawnRandomEnemyNearPlayer(instance, inside);
+                    SpawnRandomEnemyNearRandomPlayer(instance, inside);
                     numberOfTriesOfSpawningRandomEnemyNearPlayer--;
                 }
 
@@ -280,18 +272,13 @@ static class RoundManagerPatch
 
             int distanceToPlayer = 20;
 
-            if (teleportChaoticEnemyNearPlayer)
-            {
-                distanceToPlayer = 5;
-            }
-
             // check if the previous targeted player and the current distance is <= distanceToPlayer
             if (Vector3.Distance(targetPositionPrevious, targetPositionNow) <= distanceToPlayer)
             {
                 // try it with other player
                 if (numberOfTriesOfSpawningRandomEnemyNearPlayer != 0)
                 {
-                    SpawnRandomEnemyNearPlayer(instance, inside);
+                    SpawnRandomEnemyNearRandomPlayer(instance, inside);
                     numberOfTriesOfSpawningRandomEnemyNearPlayer--;
                 }
                 return;
@@ -315,7 +302,7 @@ static class RoundManagerPatch
                 // try it with other player
                 if (numberOfTriesOfSpawningRandomEnemyNearPlayer != 0)
                 {
-                    SpawnRandomEnemyNearPlayer(instance, inside);
+                    SpawnRandomEnemyNearRandomPlayer(instance, inside);
                     numberOfTriesOfSpawningRandomEnemyNearPlayer--;
                 }
                 return;
@@ -323,16 +310,6 @@ static class RoundManagerPatch
 
             if (inside)
             {
-                // teleport the sillies near a player
-                if (teleportChaoticEnemyNearPlayer && ChaoticEnemy is not null)
-                {
-#if DEBUG
-                    Plugin.Logger.LogError("Teleporting the chaotic monster near a player");
-#endif
-                    ChaoticEnemy.gameObject.transform.position = targetPositionPrevious;
-                    return;
-                }
-
                 // Time to be silly
                 (EnemyType? enemySpawnedType, NetworkObjectReference? networkObjectReference) = SpawnRandomEnemy(instance, inside: true, position: targetPositionPrevious, exclusion: ["DressGirl"]);
 
@@ -367,9 +344,11 @@ static class RoundManagerPatch
         spawnEnemyWaitTimer.Start();
     }
 
-    static NetworkObjectReference? SwitchToRandomEnemyTypeInside(EnemyAI? enemyTarget, NetworkObject? networkObject = null)
+    public static NetworkObjectReference? SwitchToRandomEnemyType(EnemyAI? enemyTarget, bool inside, NetworkObject? networkObject = null)
     {
         Plugin.Logger.LogError("Trying to switch an enemy type to random enemy");
+
+        #region null checking
 
         if (enemyTarget is null)
         {
@@ -401,73 +380,38 @@ static class RoundManagerPatch
             return null;
         }
 
-        NetworkObjectReference? networkObjectRef = null;
+        #endregion
 
-        // check if the enemy target is inside enemy
-        if (Instance.currentLevel.Enemies.Any(enemy => enemy.enemyType == enemyTarget.enemyType))
+        (EnemyType? enemySpawnedType, NetworkObjectReference? networkObjectReference) = (null, null);
+
+        if (networkObject is null)
         {
-            (EnemyType? enemySpawnedType, NetworkObjectReference? networkObjectReference) = (null, null);
-
-            if (networkObject is null)
-            {
-                (enemySpawnedType, networkObjectReference) = SpawnRandomEnemy(Instance, inside: true, position: enemyTarget.thisNetworkObject.transform.position, exclusion: ["DressGirl", "Nutcracker", "Spider"]);
-            }
-            else
-            {
-                (enemySpawnedType, networkObjectReference) = SpawnRandomEnemy(Instance, inside: true, position: networkObject.transform.position, exclusion: ["DressGirl", "Nutcracker", "Spider"]);
-            }
-
-            if (enemySpawnedType is null)
-            {
-                Plugin.Logger.LogError("enemySpawnedType is null");
-                return null;
-            }
-
-            if (networkObjectReference is null)
-            {
-                Plugin.Logger.LogError("networkObjectReference is null");
-                return null;
-            }
-
-#if DEBUG
-            Plugin.Logger.LogError($"Changing {enemyTarget.enemyType} to {enemySpawnedType}");
-#endif
-
-            networkObjectRef = networkObjectReference;
+            (enemySpawnedType, networkObjectReference) = SpawnRandomEnemy(Instance, inside: inside, position: enemyTarget.thisNetworkObject.transform.position, exclusion: ["mech", "worm", "double", "redlocust", "DressGirl", "Nutcracker", "Spider"]);
         }
         else
         {
-            (EnemyType? enemySpawnedType, NetworkObjectReference? networkObjectReference) = (null, null);
-
-            if (networkObject is null)
-            {
-                (enemySpawnedType, networkObjectReference) = SpawnRandomEnemy(Instance, inside: false, position: enemyTarget.thisNetworkObject.transform.position, exclusion: ["mech", "worm", "double", "redlocust"]);
-            }
-            else
-            {
-                (enemySpawnedType, networkObjectReference) = SpawnRandomEnemy(Instance, inside: false, position: networkObject.transform.position, exclusion: ["mech", "worm", "double", "redlocust"]);
-
-            }
-
-            if (enemySpawnedType is null)
-            {
-                Plugin.Logger.LogError("enemySpawnedType is null");
-                return null;
-            }
-
-            if (networkObjectReference is null)
-            {
-                Plugin.Logger.LogError("networkObjectReference is null");
-                return null;
-            }
-
-#if DEBUG
-            Plugin.Logger.LogError($"Changing {enemyTarget.enemyType} to {enemySpawnedType}");
-#endif
-
-            networkObjectRef = networkObjectReference;
+            (enemySpawnedType, networkObjectReference) = SpawnRandomEnemy(Instance, inside: inside, position: networkObject.transform.position, exclusion: ["mech", "worm", "double", "redlocust", "DressGirl", "Nutcracker", "Spider"]);
         }
 
+        if (enemySpawnedType is null)
+        {
+            Plugin.Logger.LogError("enemySpawnedType is null");
+            return null;
+        }
+
+        if (networkObjectReference is null)
+        {
+            Plugin.Logger.LogError("networkObjectReference is null");
+            return null;
+        }
+
+#if DEBUG
+        Plugin.Logger.LogError($"Changing {enemyTarget.enemyType} to {enemySpawnedType}");
+#endif
+
+        NetworkObjectReference? networkObjectRef = networkObjectReference;
+
+        // despawn the old enemy
         if (networkObject is null)
         {
             if (enemyTarget.thisNetworkObject is null)
@@ -485,7 +429,6 @@ static class RoundManagerPatch
 
         return networkObjectRef;
     }
-
 
     static void StartSpawning()
     {
@@ -529,8 +472,7 @@ static class RoundManagerPatch
 
             NetworkObjectReference? networkObjectReference = null;
 
-
-            networkObjectReference = SwitchToRandomEnemyTypeInside(enemyAIComponent, ChaoticEnemy);
+            networkObjectReference = SwitchToRandomEnemyType(enemyAIComponent, inside: true, ChaoticEnemy);
 
             if (networkObjectReference is not null)
             {
@@ -553,7 +495,7 @@ static class RoundManagerPatch
                 return;
             }
 
-            // Time to be the sillies
+            // spawn the silliest
             if (!thereIsChaoticEnemy)
             {
                 int allEnemyVentsLength = Instance.allEnemyVents.Length;
@@ -569,7 +511,7 @@ static class RoundManagerPatch
                 Vector3 position = ventToSpawnEnemy.floorNode.position;
                 float y = ventToSpawnEnemy.floorNode.eulerAngles.y;
 
-                (EnemyType? enemySpawnedType, NetworkObjectReference? networkObjectReference) = SpawnRandomEnemy(Instance, inside: true, position, yRotation: y);
+                (EnemyType? enemySpawnedType, NetworkObjectReference? networkObjectReference) = SpawnRandomEnemy(Instance, inside: true, position, yRotation: y, exclusion: ["DressGirl", "Nutcracker", "Spider"]);
 
                 if (enemySpawnedType is null || networkObjectReference is null)
                 {
@@ -608,7 +550,7 @@ static class RoundManagerPatch
                     case EnemySpawnType.Inside:
                         if (Random.Range(0, 100) <= 20)
                         {
-                            SpawnRandomEnemyNearPlayer(Instance, inside: true);
+                            SpawnRandomEnemyNearRandomPlayer(Instance, inside: true);
                             enemyNumber++;
                             return;
                         }
@@ -643,7 +585,7 @@ static class RoundManagerPatch
                         }
                         else
                         {
-                            (EnemyType? enemySpawnedType, NetworkObjectReference? networkObjectReference) = SpawnRandomEnemy(Instance, inside: false, position, exclusion: ["mech", "worm", "double"]);
+                            (EnemyType? enemySpawnedType, NetworkObjectReference? networkObjectReference) = SpawnRandomEnemy(Instance, inside: false, position, exclusion: ["giant", "worm", "double"]);
 
                             if (enemySpawnedType is null)
                             {
@@ -663,7 +605,7 @@ static class RoundManagerPatch
                     case EnemySpawnType.Outside:
                         if (Random.Range(0, 100) <= 20)
                         {
-                            SpawnRandomEnemyNearPlayer(Instance, inside: false);
+                            SpawnRandomEnemyNearRandomPlayer(Instance, inside: false);
                             enemyNumber++;
                             return;
                         }
