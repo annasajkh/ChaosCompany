@@ -55,6 +55,15 @@ public sealed class Timer
     }
 
     /// <summary>
+    /// Restart the timer
+    /// </summary>
+    public void Restart()
+    {
+        TimeLeft = 0;
+        Start();
+    }
+
+    /// <summary>
     /// Stop the timer
     /// </summary>
     public void Stop()

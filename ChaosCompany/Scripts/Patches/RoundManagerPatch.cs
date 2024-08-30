@@ -46,7 +46,6 @@ static class RoundManagerPatch
         enemyNumber = 0;
         maxEnemyNumber = Random.Range(4, 7);
         maxChaoticEnemySpawn = 2;
-
         spawnEnemyTimer = new(waitTime: Random.Range(60 * 2, 60 * 2 + 30), oneshot: false);
         beginChaos = false;
         numberOfTriesOfSpawningRandomEnemyNearPlayer = 6;
@@ -610,7 +609,7 @@ static class RoundManagerPatch
     [HarmonyPatch("Update")]
     static void UpdatePrefix()
     {
-        if (Instance is not null && !gameOver && Instance.IsServer && Instance.dungeonFinishedGeneratingForAllPlayers && Instance.allEnemyVents.Length != 0)
+        if (NetworkManager.Singleton.IsServer)
         {
             for (int i = Timers.Count - 1; i >= 0; i--)
             {
@@ -621,7 +620,10 @@ static class RoundManagerPatch
                     Timers.RemoveAt(i);
                 }
             }
+        }
 
+        if (Instance is not null && !gameOver && Instance.IsServer && Instance.dungeonFinishedGeneratingForAllPlayers && Instance.allEnemyVents.Length != 0)
+        {
             for (int i = chaoticEnemies.Count - 1; i >= 0; i--)
             {
                 if (chaoticEnemies[i].Dead)
