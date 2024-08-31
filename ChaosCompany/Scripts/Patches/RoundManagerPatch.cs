@@ -530,6 +530,26 @@ static class RoundManagerPatch
                 spawnType = EnemySpawnType.Inside;
             }
 
+            // every time an enemy spawn there is a chance of power outage, that can last for 1 - 3 minutes
+            if (Random.Range(0, 100) < 10)
+            {
+                Instance.SwitchPower(false);
+
+                int powerOutageDuration = Random.Range(30, 60 * 3);
+
+                HUDManager.Instance.DisplayTip("Warning", $"There is a power outage for {TimeSpan.FromSeconds(powerOutageDuration).ToString(@"mm\:ss")}", isWarning: true);
+
+                Timer powerOutageTimer = new(powerOutageDuration, true);
+
+                powerOutageTimer.OnTimeout += () =>
+                {
+                    Instance.SwitchPower(true);
+                };
+
+                powerOutageTimer.Start();
+                Timers.Add(powerOutageTimer);
+            }
+
             try
             {
                 switch (spawnType)
