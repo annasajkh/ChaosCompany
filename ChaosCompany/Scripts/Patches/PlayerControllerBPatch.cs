@@ -9,7 +9,19 @@ namespace ChaosCompany.Scripts.Patches;
 [HarmonyPatch(typeof(PlayerControllerB))]
 static class PlayerControllerBPatch
 {
-    public static bool isAlreadySpawned;
+    public static bool isEnemyAlreadySpawnedOnItemPosition;
+
+    [HarmonyPrefix]
+    [HarmonyPatch("StartSinkingServerRpc")]
+    static void StartSinkingServerRpcPrefix(ref float sinkingSpeed, ref int audioClipIndex)
+    {
+        if (!NetworkManager.Singleton.IsServer)
+        {
+            return;
+        }
+
+        sinkingSpeed *= Random.Range(0.25f, 2f);
+    }
 
     [HarmonyPrefix]
     [HarmonyPatch("DamagePlayerServerRpc")]
@@ -21,18 +33,6 @@ static class PlayerControllerBPatch
         }
 
         damageNumber = (int)(damageNumber  * Random.Range(0.25f, 1f));
-    }
-
-    [HarmonyPrefix]
-    [HarmonyPatch("StartSinkingServerRpc")]
-    static void StartSinkingServerRpc(ref float sinkingSpeed, ref int audioClipIndex)
-    {
-        if (!NetworkManager.Singleton.IsServer)
-        {
-            return;
-        }
-
-        sinkingSpeed *= Random.Range(0.25f, 2f);
     }
 
     [HarmonyPostfix]
@@ -57,7 +57,7 @@ static class PlayerControllerBPatch
             return;
         }
 
-        if (isAlreadySpawned || __instance.isInElevator)
+        if (isEnemyAlreadySpawnedOnItemPosition || __instance.isInElevator)
         {
             return;
         }
@@ -69,7 +69,7 @@ static class PlayerControllerBPatch
 
         if (__instance.isInsideFactory)
         {
-            (EnemyType? enemySpawnedType, NetworkObjectReference? networkObjectReference) = RoundManagerPatch.SpawnRandomEnemy(instance: RoundManagerPatch.Instance, inside: true, position: grabbedObjectResult.transform.position, exclusion: ["dressedgirl"]);
+            (EnemyType? enemySpawnedType, NetworkObjectReference? networkObjectReference) = RoundManagerPatch.SpawnRandomEnemy(roundManager: RoundManagerPatch.Instance, inside: true, position: grabbedObjectResult.transform.position, exclusion: ["dressedgirl"]);
 
             if (enemySpawnedType is null)
             {
@@ -82,7 +82,7 @@ static class PlayerControllerBPatch
         }
         else if (!__instance.isInsideFactory && !__instance.isInHangarShipRoom)
         {
-            (EnemyType? enemySpawnedType, NetworkObjectReference? networkObjectReference) = RoundManagerPatch.SpawnRandomEnemy(instance: RoundManagerPatch.Instance, inside: false, position: grabbedObjectResult.transform.position, exclusion: ["mech", "worm", "double"]);
+            (EnemyType? enemySpawnedType, NetworkObjectReference? networkObjectReference) = RoundManagerPatch.SpawnRandomEnemy(roundManager: RoundManagerPatch.Instance, inside: false, position: grabbedObjectResult.transform.position, exclusion: ["mech", "worm", "double"]);
 
             if (enemySpawnedType is null)
             {
@@ -94,12 +94,12 @@ static class PlayerControllerBPatch
 #endif
         }
 
-        isAlreadySpawned = true;
+        isEnemyAlreadySpawnedOnItemPosition = true;
 
         Timer spawnDelay = new Timer(1f, true);
         spawnDelay.OnTimeout += () =>
         {
-            isAlreadySpawned = false;
+            isEnemyAlreadySpawnedOnItemPosition = false;
         };
         spawnDelay.Start();
 

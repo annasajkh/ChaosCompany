@@ -1,5 +1,6 @@
 ﻿// Ignore Spelling: Teleport
 
+using ChaosCompany.Scripts.ChaoticThings;
 using ChaosCompany.Scripts.Entities;
 using Dissonance.Integrations.Unity_NFGO;
 using GameNetcodeStuff;
@@ -32,17 +33,20 @@ static class RoundManagerPatch
     static EnemySpawnType[] spawnTypes = [EnemySpawnType.Inside, EnemySpawnType.Outside];
 
     static List<ChaoticEnemy> chaoticEnemies = new();
+    static List<ChaoticItem> chaoticItems = new();
 
     static int numberOfTriesOfSpawningRandomEnemyNearPlayer = 6;
     static int maxEnemyNumber = Random.Range(4, 7);
     static int enemyNumber = 0;
     static int maxChaoticEnemySpawn = 2;
+    static int maxChaoticItemSpawn = Random.Range(2, 5);
     static bool beginChaos;
 
     static void Reset()
     {
-        PlayerControllerBPatch.isAlreadySpawned = false;
+        PlayerControllerBPatch.isEnemyAlreadySpawnedOnItemPosition = false;
         chaoticEnemies.Clear();
+        chaoticItems.Clear();
         enemyNumber = 0;
         maxEnemyNumber = Random.Range(4, 7);
         maxChaoticEnemySpawn = 2;
@@ -52,7 +56,41 @@ static class RoundManagerPatch
         Timers.Clear();
     }
 
-    public static (EnemyType?, NetworkObjectReference?) SpawnRandomEnemy(RoundManager instance, bool inside, Vector3 position, float yRotation = 0, List<string>? exclusion = null)
+    public static NetworkObject? SpawnRandomItem(RoundManager roundManager, Vector3 position, int worth)
+    {
+        if (roundManager.currentLevel.spawnableScrap.Count == 0)
+        {
+            Plugin.Logger.LogError("No spawnable scrap in the level");
+            return null;
+        }
+
+        SpawnableItemWithRarity spawnableItemWithRarity = roundManager.currentLevel.spawnableScrap[Random.Range(0, roundManager.currentLevel.spawnableScrap.Count)];
+
+        GameObject spawnedScrap = UnityEngine.Object.Instantiate(spawnableItemWithRarity.spawnableItem.spawnPrefab, position, Quaternion.identity);
+        GrabbableObject grabbableObjectComponent = spawnedScrap.GetComponent<GrabbableObject>();
+
+        grabbableObjectComponent.transform.rotation = Quaternion.Euler(grabbableObjectComponent.itemProperties.restingRotation);
+        grabbableObjectComponent.fallTime = 0;
+        grabbableObjectComponent.SetScrapValue(worth);
+
+        NetworkObject grabbableObjectNetworkObject = grabbableObjectComponent.GetComponent<NetworkObject>();
+        grabbableObjectNetworkObject.Spawn();
+
+        return grabbableObjectNetworkObject;
+    }
+
+    public static NetworkObject? SwitchToRandomItemType(RoundManager roundManager, NetworkObject scrapTarget)
+    {
+        Vector3 scrapOldPosition = scrapTarget.gameObject.transform.position;
+
+        Plugin.Logger.LogError($"scrapOldPosition {scrapOldPosition}");
+
+        scrapTarget.Despawn();
+
+        return SpawnRandomItem(roundManager, scrapOldPosition, Random.Range(0, 300));
+    }
+
+    public static (EnemyType?, NetworkObjectReference?) SpawnRandomEnemy(RoundManager roundManager, bool inside, Vector3 position, float yRotation = 0, List<string>? exclusion = null)
     {
         Plugin.Logger.LogError("Trying to spawn random enemy");
 
@@ -60,12 +98,12 @@ static class RoundManagerPatch
 
         if (inside)
         {
-            enemiesTypes = instance.currentLevel.Enemies;
+            enemiesTypes = roundManager.currentLevel.Enemies;
         }
         else
         {
-            List<SpawnableEnemyWithRarity> enemiesTypesTemp = instance.currentLevel.OutsideEnemies;
-            enemiesTypesTemp.AddRange(instance.currentLevel.DaytimeEnemies);
+            List<SpawnableEnemyWithRarity> enemiesTypesTemp = roundManager.currentLevel.OutsideEnemies;
+            enemiesTypesTemp.AddRange(roundManager.currentLevel.DaytimeEnemies);
 
             enemiesTypes = enemiesTypesTemp;
         }
@@ -144,16 +182,16 @@ static class RoundManagerPatch
         }
         else
         {
-            NetworkObjectReference networkObjectReference = instance.SpawnEnemyGameObject(position, yRotation, -1, enemyToSpawn.enemyType);
+            NetworkObjectReference networkObjectReference = roundManager.SpawnEnemyGameObject(position, yRotation, -1, enemyToSpawn.enemyType);
             return (enemyToSpawn.enemyType, networkObjectReference);
         }
     }
 
-    public static GameObject? GetRandomAlivePlayer(RoundManager instance, bool inside)
+    public static GameObject? GetRandomAlivePlayer(RoundManager roundManager, bool inside)
     {
         Plugin.Logger.LogError("Trying to get random alive player");
 
-        List<GameObject> players = instance.playersManager.allPlayerObjects.ToList();
+        List<GameObject> players = roundManager.playersManager.allPlayerObjects.ToList();
 
         int playerCount = players.Count;
 
@@ -206,9 +244,9 @@ static class RoundManagerPatch
         return randomPlayer;
     }
 
-    public static void SpawnRandomEnemyNearRandomPlayer(RoundManager instance, bool inside)
+    public static void SpawnRandomEnemyNearRandomPlayer(RoundManager roundManager, bool inside)
     {
-        int allPlayerLength = instance.playersManager.allPlayerScripts.Length;
+        int allPlayerLength = roundManager.playersManager.allPlayerScripts.Length;
 
         if (allPlayerLength == 0)
         {
@@ -216,7 +254,7 @@ static class RoundManagerPatch
             return;
         }
 
-        GameObject? randomAlivePlayer = GetRandomAlivePlayer(instance, inside);
+        GameObject? randomAlivePlayer = GetRandomAlivePlayer(roundManager, inside);
 
         if (randomAlivePlayer is null)
         {
@@ -246,7 +284,7 @@ static class RoundManagerPatch
                 // try it with other player
                 if (numberOfTriesOfSpawningRandomEnemyNearPlayer != 0)
                 {
-                    SpawnRandomEnemyNearRandomPlayer(instance, inside);
+                    SpawnRandomEnemyNearRandomPlayer(roundManager, inside);
                     numberOfTriesOfSpawningRandomEnemyNearPlayer--;
                 }
 
@@ -270,7 +308,7 @@ static class RoundManagerPatch
                 // try it with other player
                 if (numberOfTriesOfSpawningRandomEnemyNearPlayer != 0)
                 {
-                    SpawnRandomEnemyNearRandomPlayer(instance, inside);
+                    SpawnRandomEnemyNearRandomPlayer(roundManager, inside);
                     numberOfTriesOfSpawningRandomEnemyNearPlayer--;
                 }
                 return;
@@ -279,7 +317,7 @@ static class RoundManagerPatch
             bool otherPlayerNear = false;
 
             // check if other player are near
-            foreach (var otherPlayer in instance.playersManager.allPlayerScripts)
+            foreach (var otherPlayer in roundManager.playersManager.allPlayerScripts)
             {
                 if (Vector3.Distance(otherPlayer.transform.position, targetPositionPrevious) <= distanceToPlayer)
                 {
@@ -294,7 +332,7 @@ static class RoundManagerPatch
                 // try it with other player
                 if (numberOfTriesOfSpawningRandomEnemyNearPlayer != 0)
                 {
-                    SpawnRandomEnemyNearRandomPlayer(instance, inside);
+                    SpawnRandomEnemyNearRandomPlayer(roundManager, inside);
                     numberOfTriesOfSpawningRandomEnemyNearPlayer--;
                 }
                 return;
@@ -303,7 +341,7 @@ static class RoundManagerPatch
             if (inside)
             {
                 // Time to be silly
-                (EnemyType? enemySpawnedType, NetworkObjectReference? networkObjectReference) = SpawnRandomEnemy(instance, inside: true, position: targetPositionPrevious, exclusion: ["DressGirl"]);
+                (EnemyType? enemySpawnedType, NetworkObjectReference? networkObjectReference) = SpawnRandomEnemy(roundManager, inside: true, position: targetPositionPrevious, exclusion: ["DressGirl"]);
 
                 if (enemySpawnedType is null)
                 {
@@ -316,7 +354,7 @@ static class RoundManagerPatch
             else
             {
                 // Time to be silly
-                (EnemyType? enemySpawnedType, NetworkObjectReference? networkObjectReference) = SpawnRandomEnemy(instance, inside: false, position: targetPositionPrevious, exclusion: ["mech", "worm", "double"]);
+                (EnemyType? enemySpawnedType, NetworkObjectReference? networkObjectReference) = SpawnRandomEnemy(roundManager, inside: false, position: targetPositionPrevious, exclusion: ["mech", "worm", "double"]);
 
                 if (enemySpawnedType is null)
                 {
@@ -336,7 +374,7 @@ static class RoundManagerPatch
         spawnEnemyWaitTimer.Start();
     }
 
-    public static NetworkObjectReference? SwitchToRandomEnemyType(EnemyAI? enemyTarget, bool inside, NetworkObject? networkObject = null)
+    public static NetworkObjectReference? SwitchToRandomEnemyType(RoundManager roundManager, EnemyAI? enemyTarget, bool inside, NetworkObject? networkObject = null)
     {
         Plugin.Logger.LogError("Trying to switch an enemy type to random enemy");
 
@@ -354,15 +392,9 @@ static class RoundManagerPatch
             return null;
         }
 
-        if (Instance?.currentLevel.Enemies is null)
+        if (roundManager?.currentLevel.Enemies is null)
         {
-            Plugin.Logger.LogError("Instance?.currentLevel.Enemies is null");
-            return null;
-        }
-
-        if (Instance is null)
-        {
-            Plugin.Logger.LogError("Instance is null");
+            Plugin.Logger.LogError("roundManager?.currentLevel.Enemies is null");
             return null;
         }
 
@@ -378,11 +410,11 @@ static class RoundManagerPatch
 
         if (networkObject is null)
         {
-            (enemySpawnedType, networkObjectReference) = SpawnRandomEnemy(Instance, inside: inside, position: enemyTarget.thisNetworkObject.transform.position, exclusion: ["double", "redlocust", "DressGirl", "Nutcracker", "Spider"]);
+            (enemySpawnedType, networkObjectReference) = SpawnRandomEnemy(roundManager, inside: inside, position: enemyTarget.thisNetworkObject.transform.position, exclusion: ["double", "redlocust", "DressGirl", "Nutcracker", "Spider"]);
         }
         else
         {
-            (enemySpawnedType, networkObjectReference) = SpawnRandomEnemy(Instance, inside: inside, position: networkObject.transform.position, exclusion: ["double", "redlocust", "DressGirl", "Nutcracker", "Spider"]);
+            (enemySpawnedType, networkObjectReference) = SpawnRandomEnemy(roundManager, inside: inside, position: networkObject.transform.position, exclusion: ["double", "redlocust", "DressGirl", "Nutcracker", "Spider"]);
         }
 
         if (enemySpawnedType is null)
@@ -441,6 +473,25 @@ static class RoundManagerPatch
         chaoticEnemies.Add(chaoticEnemy);
     }
 
+    static void SpawnChaoticItem()
+    {
+        if (Instance is null)
+        {
+            Plugin.Logger.LogError("Instance is null");
+            return;
+        }
+
+        ChaoticItem? chaoticItem = new ChaoticItem(Instance);
+
+        if (chaoticItem.Spawn() is null)
+        {
+            Plugin.Logger.LogError("Cannot spawn chaotic item");
+            return;
+        }
+
+        chaoticItems.Add(chaoticItem);
+    }
+
     static void StartSpawning()
     {
         Plugin.Logger.LogError("Start spawning enemies");
@@ -450,7 +501,6 @@ static class RoundManagerPatch
             Plugin.Logger.LogError("Cannot spawn monster Instance is null");
             return;
         }
-
 
         spawnEnemyTimer.OnTimeout += () =>
         {
@@ -626,7 +676,7 @@ static class RoundManagerPatch
         {
             for (int i = chaoticEnemies.Count - 1; i >= 0; i--)
             {
-                if (chaoticEnemies[i].Dead)
+                if (chaoticEnemies[i].ItsJoever)
                 {
                     // chaotic enemy can die but they will get reincarnated with different form at different time
                     Timer chaoticEnemyRespawnCooldown = new Timer(waitTime: Random.Range(60 * 2, 60 * 2 + 30), oneshot: true);
@@ -646,10 +696,23 @@ static class RoundManagerPatch
                 }
             }
 
+            for (int i = chaoticItems.Count - 1; i >= 0; i--)
+            {
+                if (chaoticItems[i].ItsJoever)
+                {
+                    chaoticItems.RemoveAt(i);
+                }
+            }
+
             if (!beginChaos)
             {
                 StartSpawning();
                 Plugin.Logger.LogError("Chaos is starting");
+
+                for (int i = 0; i < maxChaoticItemSpawn; i++)
+                {
+                    SpawnChaoticItem();
+                }
 
                 spawnEnemyTimer.Start();
                 beginChaos = true;

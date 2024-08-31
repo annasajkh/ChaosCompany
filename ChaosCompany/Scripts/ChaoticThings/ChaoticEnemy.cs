@@ -1,26 +1,23 @@
-﻿using ChaosCompany.Scripts.Patches;
+﻿using ChaosCompany.Scripts.ChaoticThings;
+using ChaosCompany.Scripts.Patches;
 using Unity.Netcode;
 using UnityEngine;
 using Timer = ChaosCompany.Scripts.Components.Timer;
 
 namespace ChaosCompany.Scripts.Entities;
 
-public class ChaoticEnemy
+public class ChaoticEnemy : Chaotic
 {
-    public RoundManager RoundManager { get; private set; }
     public bool Inside { get; private set; }
-    public NetworkObject? NetworkObject { get; private set; }
-    public bool Dead { get; private set; }
     string kindString;
 
     Timer changeType = new(waitTime: 10, oneshot: false);
     bool isChaoticEnemyAlreadyTryingToChange;
 
-    public ChaoticEnemy(RoundManager roundManager, bool inside)
+    public ChaoticEnemy(RoundManager roundManager, bool inside) : base(roundManager, new(waitTime: 10, oneshot: false))
     {
         Inside = inside;
         kindString = Inside ? "inside" : "outside";
-        RoundManager = roundManager;
 
         changeType.OnTimeout += () =>
         {
@@ -38,9 +35,9 @@ public class ChaoticEnemy
             if (NetworkObject.gameObject.GetComponent<EnemyAI>().isEnemyDead)
             {
                 Plugin.Logger.LogError($"An {kindString} chaotic enemy died as {NetworkObject.gameObject.GetComponent<EnemyAI>().enemyType.enemyName}");
-                Dead = true;
                 changeType.Stop();
                 changeType.Finished = true;
+                ItsJoever = true;
                 return;
             }
 
@@ -61,7 +58,7 @@ public class ChaoticEnemy
 
             NetworkObjectReference? networkObjectReference;
 
-            networkObjectReference = RoundManagerPatch.SwitchToRandomEnemyType(enemyAIComponent, inside: Inside, NetworkObject);
+            networkObjectReference = RoundManagerPatch.SwitchToRandomEnemyType(roundManager, enemyAIComponent, inside: Inside, NetworkObject);
 
             if (networkObjectReference is not null)
             {
@@ -78,7 +75,7 @@ public class ChaoticEnemy
         RoundManagerPatch.Timers.Add(changeType);
     }
 
-    public ChaoticEnemy? Spawn()
+    public override Chaotic? Spawn()
     {
         Vector3 position;
         float y;
