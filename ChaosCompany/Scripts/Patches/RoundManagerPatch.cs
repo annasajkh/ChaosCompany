@@ -38,7 +38,7 @@ static class RoundManagerPatch
     static int numberOfTriesOfSpawningRandomEnemyNearPlayer = 6;
     static int maxEnemyNumber = Random.Range(4, 7);
     static int enemyNumber = 0;
-    static int maxChaoticEnemySpawn = 2;
+    static int maxChaoticEnemySpawn = Random.Range(1, 3);
     static int maxChaoticItemSpawn = Random.Range(2, 5);
     static bool beginChaos;
 
