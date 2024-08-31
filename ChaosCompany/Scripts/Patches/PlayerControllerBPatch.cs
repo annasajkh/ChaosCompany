@@ -20,7 +20,7 @@ static class PlayerControllerBPatch
             return;
         }
 
-        damageNumber = (int)(damageNumber  * Random.Range(0.25f, 1.25f));
+        damageNumber = (int)(damageNumber  * Random.Range(0.25f, 1f));
     }
 
     [HarmonyPrefix]
