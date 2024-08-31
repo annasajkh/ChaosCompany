@@ -23,6 +23,11 @@ static class DepositItemsDeskPatch
     [HarmonyPatch("SetTimesHeardNoiseServerRpc")]
     static void SetTimesHeardNoiseServerRpcPostfix(DepositItemsDesk __instance, ref float valueChange)
     {
+        if (!__instance.IsServer)
+        {
+            return;
+        }
+
         int numberOfSoundSmallerThanThisSound = 0;
         bool thereIsSomethingEqual = false;
 
@@ -55,11 +60,6 @@ static class DepositItemsDeskPatch
 #if DEBUG
         Plugin.Logger.LogError($"hearing noise {timesHearingNoise + 1} times");
 #endif
-
-        if (!__instance.IsServer)
-        {
-            return;
-        }
 
         consecutiveNoiseDelay.Restart();
         consecutiveNoiseDelay.OnTimeout += () =>
