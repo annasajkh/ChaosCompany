@@ -8,9 +8,7 @@ What did i add / change
 - And the company monster doesn't like noises now
 - And much more thing that i changed, that i'm not going to spoil, good luck!
 
-
-
-Thank you for all my friends that tested the mod Leeroy, Rogue, Tye, Coco, NightCat, Lomnk, Bill, Frick, Sade, Bnw, Bambaratatata, Sorazuki, Zzz
+Thank you for all my friends that tested the mod Leeroy, Rogue, Tye, Coco, NightCat, Lomnk, Bill, Frick, Sade, Bnw, Bambaratatata, Sorazuki, and Zzz
 
 And thank you for all of random people on the public lobby that also test it
 
