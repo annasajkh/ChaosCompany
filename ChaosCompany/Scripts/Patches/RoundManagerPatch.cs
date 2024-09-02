@@ -36,9 +36,9 @@ static class RoundManagerPatch
     static List<ChaoticItem> chaoticItems = new();
 
     static int numberOfTriesOfSpawningRandomEnemyNearPlayer = 6;
-    static int maxEnemyNumber = Random.Range(4, 7);
+    static int maxEnemyNumber = Random.Range(2, 6);
     static int enemyNumber = 0;
-    static int maxChaoticEnemySpawn = Random.Range(1, 3);
+    static int maxChaoticEnemySpawn = 2;
     static int maxChaoticItemSpawn = Random.Range(2, 5);
     static bool beginChaos;
 
@@ -48,7 +48,7 @@ static class RoundManagerPatch
         chaoticEnemies.Clear();
         chaoticItems.Clear();
         enemyNumber = 0;
-        maxEnemyNumber = Random.Range(4, 7);
+        maxEnemyNumber = Random.Range(2, 6);
         maxChaoticEnemySpawn = 2;
         spawnEnemyTimer = new(waitTime: Random.Range(60 * 2, 60 * 2 + 30), oneshot: false);
         beginChaos = false;
@@ -82,8 +82,6 @@ static class RoundManagerPatch
     public static NetworkObject? SwitchToRandomItemType(RoundManager roundManager, NetworkObject scrapTarget)
     {
         Vector3 scrapOldPosition = scrapTarget.gameObject.transform.position;
-
-        Plugin.Logger.LogError($"scrapOldPosition {scrapOldPosition}");
 
         scrapTarget.Despawn();
 
@@ -374,7 +372,7 @@ static class RoundManagerPatch
         spawnEnemyWaitTimer.Start();
     }
 
-    public static NetworkObjectReference? SwitchToRandomEnemyType(RoundManager roundManager, EnemyAI? enemyTarget, bool inside, NetworkObject? networkObject = null)
+    public static NetworkObjectReference? SwitchToRandomEnemyType(RoundManager roundManager, EnemyAI? enemyTarget, bool inside, NetworkObject networkObject)
     {
         Plugin.Logger.LogError("Trying to switch an enemy type to random enemy");
 
@@ -406,16 +404,7 @@ static class RoundManagerPatch
 
         #endregion
 
-        (EnemyType? enemySpawnedType, NetworkObjectReference? networkObjectReference) = (null, null);
-
-        if (networkObject is null)
-        {
-            (enemySpawnedType, networkObjectReference) = SpawnRandomEnemy(roundManager, inside: inside, position: enemyTarget.thisNetworkObject.transform.position, exclusion: ["double", "redlocust", "DressGirl", "Nutcracker", "Spider"]);
-        }
-        else
-        {
-            (enemySpawnedType, networkObjectReference) = SpawnRandomEnemy(roundManager, inside: inside, position: networkObject.transform.position, exclusion: ["double", "redlocust", "DressGirl", "Nutcracker", "Spider"]);
-        }
+        (EnemyType? enemySpawnedType, NetworkObjectReference? networkObjectReference) = SpawnRandomEnemy(roundManager, inside: inside, position: enemyTarget.thisNetworkObject.transform.position, exclusion: ["cave", "double", "redlocust", "DressGirl", "Nutcracker", "Spider"]);
 
         if (enemySpawnedType is null)
         {
@@ -435,18 +424,9 @@ static class RoundManagerPatch
 
         NetworkObjectReference? networkObjectRef = networkObjectReference;
 
-        // despawn the old enemy
-        if (networkObject is null)
-        {
-            if (enemyTarget.thisNetworkObject is null)
-            {
-                Plugin.Logger.LogError("enemyTarget.thisNetworkObject is null");
-                return null;
-            }
+        enemyTarget.KillEnemyOnOwnerClient(overrideDestroy: true);
 
-            enemyTarget.thisNetworkObject.Despawn();
-        }
-        else
+        if (networkObject.IsSpawned)
         {
             networkObject.Despawn();
         }
@@ -515,6 +495,7 @@ static class RoundManagerPatch
             {
                 SpawnChaoticEnemy();
                 maxChaoticEnemySpawn--;
+                return;
             }
 
             EnemySpawnType spawnType;
@@ -537,7 +518,7 @@ static class RoundManagerPatch
 
                 int powerOutageDuration = Random.Range(30, 60 * 3);
 
-                HUDManager.Instance.DisplayTip("Warning", $"There is a power outage for {TimeSpan.FromSeconds(powerOutageDuration).ToString(@"mm\:ss")}", isWarning: true);
+                HUDManager.Instance.AddTextToChatOnServer($"Warning: There is a power outage for {TimeSpan.FromSeconds(powerOutageDuration).ToString(@"mm\:ss")}");
 
                 Timer powerOutageTimer = new(powerOutageDuration, true);
 

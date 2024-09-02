@@ -14,8 +14,13 @@ static class DepositItemsDeskPatch
 
     [HarmonyPostfix]
     [HarmonyPatch("Start")]
-    static void StartPostfix()
+    static void StartPostfix(DepositItemsDesk __instance)
     {
+        if (!__instance.IsServer)
+        {
+            return;
+        }
+
         RoundManagerPatch.Timers.Add(consecutiveNoiseDelay);
     }
 

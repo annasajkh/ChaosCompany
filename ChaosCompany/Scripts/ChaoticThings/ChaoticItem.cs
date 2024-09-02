@@ -6,7 +6,7 @@ namespace ChaosCompany.Scripts.ChaoticThings;
 
 public class ChaoticItem : Chaotic
 {
-    public ChaoticItem(RoundManager roundManager) : base(roundManager, new(waitTime: 3, oneshot: false))
+    public ChaoticItem(RoundManager roundManager) : base(roundManager, new(waitTime: 1, oneshot: false))
     {
         changeType.OnTimeout += () =>
         {
@@ -17,15 +17,14 @@ public class ChaoticItem : Chaotic
 
             if (NetworkObject.gameObject.GetComponent<GrabbableObject>().isHeld)
             {
+#if DEBUG
                 Plugin.Logger.LogError("An chaotic item has been pickup by a player");
+#endif
                 changeType.Stop();
                 changeType.Finished = true;
                 ItsJoever = true;
                 return;
             }
-
-
-            Plugin.Logger.LogError("An chaotic item is changing");
 
             NetworkObject = RoundManagerPatch.SwitchToRandomItemType(roundManager, NetworkObject);
         };

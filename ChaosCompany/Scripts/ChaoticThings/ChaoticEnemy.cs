@@ -29,6 +29,13 @@ public class ChaoticEnemy : Chaotic
 
             if (NetworkObject is null)
             {
+                Plugin.Logger.LogError("NetworkObject is null");
+                return;
+            }
+
+            if (NetworkObject?.gameObject is null)
+            {
+                Plugin.Logger.LogError("NetworkObject.gameObject is null");
                 return;
             }
 
@@ -130,7 +137,7 @@ public class ChaoticEnemy : Chaotic
             position = RoundManager.PositionWithDenialPointsChecked(position, spawnPoints, outsideEnemyToSpawn.enemyType);
         }
 
-        (EnemyType? enemySpawnedType, NetworkObjectReference? networkObjectReference) = RoundManagerPatch.SpawnRandomEnemy(RoundManager, inside: Inside, position, yRotation: y, exclusion: ["DressGirl", "Nutcracker", "Spider", "double", "Red"]);
+        (EnemyType? enemySpawnedType, NetworkObjectReference? networkObjectReference) = RoundManagerPatch.SpawnRandomEnemy(RoundManager, inside: Inside, position, yRotation: y, exclusion: ["cave", "DressGirl", "Nutcracker", "Spider", "double", "Red"]);
 
         if (enemySpawnedType is null || networkObjectReference is null)
         {
