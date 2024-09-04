@@ -18,7 +18,7 @@ public class ChaoticItem : Chaotic
             if (NetworkObject.gameObject.GetComponent<GrabbableObject>().isHeld)
             {
 #if DEBUG
-                Plugin.Logger.LogError("An chaotic item has been pickup by a player");
+                Plugin.Logger.LogError("A chaotic item has been pickup by a player");
 #endif
                 changeType.Stop();
                 changeType.Finished = true;
@@ -54,12 +54,17 @@ public class ChaoticItem : Chaotic
 
         Vector3 position = RoundManager.GetRandomNavMeshPositionInBoxPredictable(randomScrapSpawn.transform.position, randomScrapSpawn.itemSpawnRange, RoundManager.navHit, RoundManager.AnomalyRandom) + Vector3.up * spawnableItemWithRarity.spawnableItem.verticalOffset;
 
-        GameObject spawnedScrap = UnityEngine.Object.Instantiate(spawnableItemWithRarity.spawnableItem.spawnPrefab, position, Quaternion.identity);
+        GameObject spawnedScrap = UnityEngine.Object.Instantiate(spawnableItemWithRarity.spawnableItem.spawnPrefab, position + new Vector3(0, 0.5f, 0), Quaternion.identity);
+
+#if DEBUG
+                Plugin.Logger.LogError($"Spawning a chaotic item of name {spawnableItemWithRarity.spawnableItem.itemName}");
+#endif
+
         GrabbableObject grabbableObjectComponent = spawnedScrap.GetComponent<GrabbableObject>();
 
         grabbableObjectComponent.transform.rotation = Quaternion.Euler(grabbableObjectComponent.itemProperties.restingRotation);
         grabbableObjectComponent.fallTime = 0;
-        grabbableObjectComponent.scrapValue = Random.Range(0, 300);
+        grabbableObjectComponent.SetScrapValue(Random.Range(25, 150));
 
         NetworkObject grabbableObjectNetworkObject = grabbableObjectComponent.GetComponent<NetworkObject>();
         grabbableObjectNetworkObject.Spawn();

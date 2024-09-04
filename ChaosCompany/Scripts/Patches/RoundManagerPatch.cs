@@ -39,7 +39,7 @@ static class RoundManagerPatch
     static int maxEnemyNumber = Random.Range(2, 6);
     static int enemyNumber = 0;
     static int maxChaoticEnemySpawn = 2;
-    static int maxChaoticItemSpawn = Random.Range(2, 5);
+    static int maxChaoticItemSpawn = Random.Range(5, 8);
     static bool beginChaos;
 
     static void Reset()
@@ -48,6 +48,7 @@ static class RoundManagerPatch
         chaoticEnemies.Clear();
         chaoticItems.Clear();
         enemyNumber = 0;
+        maxChaoticItemSpawn = Random.Range(5, 8);
         maxEnemyNumber = Random.Range(2, 6);
         maxChaoticEnemySpawn = 2;
         spawnEnemyTimer = new(waitTime: Random.Range(60 * 2, 60 * 2 + 30), oneshot: false);
@@ -85,7 +86,7 @@ static class RoundManagerPatch
 
         scrapTarget.Despawn();
 
-        return SpawnRandomItem(roundManager, scrapOldPosition, Random.Range(0, 300));
+        return SpawnRandomItem(roundManager, scrapOldPosition  + new Vector3(0, 0.5f, 0), Random.Range(25, 150));
     }
 
     public static (EnemyType?, NetworkObjectReference?) SpawnRandomEnemy(RoundManager roundManager, bool inside, Vector3 position, float yRotation = 0, List<string>? exclusion = null)
