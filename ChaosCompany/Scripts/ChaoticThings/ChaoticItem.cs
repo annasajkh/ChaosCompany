@@ -64,7 +64,7 @@ public class ChaoticItem : Chaotic
 
         grabbableObjectComponent.transform.rotation = Quaternion.Euler(grabbableObjectComponent.itemProperties.restingRotation);
         grabbableObjectComponent.fallTime = 0;
-        grabbableObjectComponent.SetScrapValue(Random.Range(25, 150));
+        grabbableObjectComponent.SetScrapValue(Random.Range(5, 150));
 
         NetworkObject grabbableObjectNetworkObject = grabbableObjectComponent.GetComponent<NetworkObject>();
         grabbableObjectNetworkObject.Spawn();
