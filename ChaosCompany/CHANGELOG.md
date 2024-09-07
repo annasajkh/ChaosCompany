@@ -6,10 +6,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [1.1.2] - 9/7/2024
 
-Minor changelog changes
+Minor readme changes
 
 ### Changed
-- Forgot to include someone to the changelog
+- Forgot to include someone to the readme
 
 ## [1.1.1] - 9/7/2024
 
