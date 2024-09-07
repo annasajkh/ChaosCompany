@@ -4,6 +4,25 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [1.1.1] - 9/7/2024
+
+Minor chaotic item update
+
+### Changed
+- Rollback chaotic item changes
+
+## [1.1.0] - 9/7/2024
+
+Major update
+
+### Changed
+- Add move enemy
+
+
+### Fixed
+- Fix only the host can see the deadline as 3 instead of the mod picked random deadline for the first round
+- Fix chaotic entities not despawning if you go to the same moon
+
 ## [1.0.3] - 9/4/2024
 
 Tweak chaotic item

@@ -1,6 +1,8 @@
-﻿using HarmonyLib;
+﻿using ChaosCompany.Scripts.Managers;
+using HarmonyLib;
 using System;
 using System.Collections.Generic;
+using Unity.Netcode;
 using Timer = ChaosCompany.Scripts.Components.Timer;
 
 namespace ChaosCompany.Scripts.Patches;
@@ -16,19 +18,19 @@ static class DepositItemsDeskPatch
     [HarmonyPatch("Start")]
     static void StartPostfix(DepositItemsDesk __instance)
     {
-        if (!__instance.IsServer)
+        if (!NetworkManager.Singleton.IsServer)
         {
             return;
         }
 
-        RoundManagerPatch.Timers.Add(consecutiveNoiseDelay);
+        GameManager.Timers.Add(consecutiveNoiseDelay);
     }
 
     [HarmonyPostfix]
     [HarmonyPatch("SetTimesHeardNoiseServerRpc")]
     static void SetTimesHeardNoiseServerRpcPostfix(DepositItemsDesk __instance, ref float valueChange)
     {
-        if (!__instance.IsServer)
+        if (!NetworkManager.Singleton.IsServer)
         {
             return;
         }

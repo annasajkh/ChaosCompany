@@ -1,7 +1,9 @@
-﻿using HarmonyLib;
+﻿using ChaosCompany.Scripts.Managers;
+using HarmonyLib;
 using System.ComponentModel;
 using Unity.Netcode;
 using UnityEngine.SceneManagement;
+using Random = UnityEngine.Random;
 
 namespace ChaosCompany.Scripts.Patches;
 
@@ -17,11 +19,13 @@ public class StartOfRoundPatch
             return;
         }
 
+        Random.InitState(__instance.randomMapSeed);
+
         Plugin.Logger.LogError($"Game Starting with level {sceneName}");
 
         if (sceneName != "CompanyBuilding")
         {
-            RoundManagerPatch.gameOver = false;
+            GameManager.gameOver = false;
         }
     }
 }

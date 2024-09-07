@@ -22,6 +22,7 @@ static class TimeOfDayPatch
         if (Instance == null)
         {
             __instance.quotaVariables.deadlineDaysAmount = Random.Range(4, 7);
+            __instance.SyncTimeClientRpc(__instance.globalTime, (int)__instance.timeUntilDeadline);
         }
 
         Instance = __instance;

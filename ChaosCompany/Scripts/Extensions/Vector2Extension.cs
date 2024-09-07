@@ -5,7 +5,7 @@ using Vector2 = System.Numerics.Vector2;
 
 namespace ChaosCompany.Scripts.Extensions;
 
-public static class Vector2Ext
+public static class Vector2Extension
 {
     /// <summary>
     /// Rotate vector2 by a degrees value

@@ -1,4 +1,5 @@
-﻿using GameNetcodeStuff;
+﻿using ChaosCompany.Scripts.Managers;
+using GameNetcodeStuff;
 using HarmonyLib;
 using Unity.Netcode;
 using UnityEngine;
@@ -39,7 +40,12 @@ static class PlayerControllerBPatch
     [HarmonyPatch("GrabObjectServerRpc")]
     static void GrabObjectServerRpcPostfix(PlayerControllerB __instance, ref NetworkObjectReference grabbedObject)
     {
-        if (__instance is null || NetworkManager.Singleton is null || RoundManagerPatch.Instance is null || !NetworkManager.Singleton.IsServer)
+        if (!NetworkManager.Singleton.IsServer)
+        {
+            return;
+        }
+
+        if (__instance is null || NetworkManager.Singleton is null || RoundManagerPatch.Instance is null)
         {
             return;
         }
@@ -69,7 +75,7 @@ static class PlayerControllerBPatch
 
         if (__instance.isInsideFactory)
         {
-            (EnemyType? enemySpawnedType, NetworkObjectReference? networkObjectReference) = RoundManagerPatch.SpawnRandomEnemy(roundManager: RoundManagerPatch.Instance, inside: true, position: grabbedObjectResult.transform.position, exclusion: ["dressedgirl"]);
+            (EnemyType? enemySpawnedType, NetworkObjectReference? networkObjectReference) = GameManager.SpawnRandomEnemy(roundManager: RoundManagerPatch.Instance, inside: true, position: grabbedObjectResult.transform.position, exclusion: ["dressedgirl"]);
 
             if (enemySpawnedType is null)
             {
@@ -82,7 +88,7 @@ static class PlayerControllerBPatch
         }
         else if (!__instance.isInsideFactory && !__instance.isInHangarShipRoom)
         {
-            (EnemyType? enemySpawnedType, NetworkObjectReference? networkObjectReference) = RoundManagerPatch.SpawnRandomEnemy(roundManager: RoundManagerPatch.Instance, inside: false, position: grabbedObjectResult.transform.position, exclusion: ["mech", "worm", "double"]);
+            (EnemyType? enemySpawnedType, NetworkObjectReference? networkObjectReference) = GameManager.SpawnRandomEnemy(roundManager: RoundManagerPatch.Instance, inside: false, position: grabbedObjectResult.transform.position, exclusion: ["mech", "worm", "double"]);
 
             if (enemySpawnedType is null)
             {
@@ -103,6 +109,6 @@ static class PlayerControllerBPatch
         };
         spawnDelay.Start();
 
-        RoundManagerPatch.Timers.Add(spawnDelay);
+        GameManager.Timers.Add(spawnDelay);
     }
 }

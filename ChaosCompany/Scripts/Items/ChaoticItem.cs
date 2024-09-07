@@ -1,13 +1,18 @@
-﻿using ChaosCompany.Scripts.Patches;
+﻿using ChaosCompany.Scripts.Abstracts;
+using ChaosCompany.Scripts.Managers;
 using Unity.Netcode;
 using UnityEngine;
+using Timer = ChaosCompany.Scripts.Components.Timer;
 
-namespace ChaosCompany.Scripts.ChaoticThings;
+namespace ChaosCompany.Scripts.Items;
 
 public class ChaoticItem : Chaotic
 {
-    public ChaoticItem(RoundManager roundManager) : base(roundManager, new(waitTime: 1, oneshot: false))
+    Timer changeType;
+
+    public ChaoticItem(RoundManager roundManager) : base(roundManager)
     {
+        changeType = new(waitTime: 1, oneshot: false);
         changeType.OnTimeout += () =>
         {
             if (NetworkObject is null)
@@ -15,21 +20,28 @@ public class ChaoticItem : Chaotic
                 return;
             }
 
-            if (NetworkObject.gameObject.GetComponent<GrabbableObject>().isHeld)
-            {
-#if DEBUG
-                Plugin.Logger.LogError("A chaotic item has been pickup by a player");
-#endif
-                changeType.Stop();
-                changeType.Finished = true;
-                ItsJoever = true;
-                return;
-            }
-
-            NetworkObject = RoundManagerPatch.SwitchToRandomItemType(roundManager, NetworkObject);
+            NetworkObject = GameManager.SwitchToRandomItemType(roundManager, NetworkObject);
         };
 
-        RoundManagerPatch.Timers.Add(changeType);
+        GameManager.Timers.Add(changeType);
+    }
+
+    public override void Update()
+    {
+        if (NetworkObject is null)
+        {
+            return;
+        }
+
+        if (NetworkObject.gameObject.GetComponent<GrabbableObject>().isHeld)
+        {
+#if DEBUG
+            Plugin.Logger.LogError("A chaotic item has been pickup by a player");
+#endif
+            changeType.Stop();
+            changeType.Finished = true;
+            ItsJoever = true;
+         }
     }
 
     public override Chaotic? Spawn()
@@ -54,10 +66,10 @@ public class ChaoticItem : Chaotic
 
         Vector3 position = RoundManager.GetRandomNavMeshPositionInBoxPredictable(randomScrapSpawn.transform.position, randomScrapSpawn.itemSpawnRange, RoundManager.navHit, RoundManager.AnomalyRandom) + Vector3.up * spawnableItemWithRarity.spawnableItem.verticalOffset;
 
-        GameObject spawnedScrap = UnityEngine.Object.Instantiate(spawnableItemWithRarity.spawnableItem.spawnPrefab, position + new Vector3(0, 0.5f, 0), Quaternion.identity);
+        GameObject spawnedScrap = Object.Instantiate(spawnableItemWithRarity.spawnableItem.spawnPrefab, position + new Vector3(0, 0.5f, 0), Quaternion.identity);
 
 #if DEBUG
-                Plugin.Logger.LogError($"Spawning a chaotic item of name {spawnableItemWithRarity.spawnableItem.itemName}");
+        Plugin.Logger.LogError($"Spawning a chaotic item of name {spawnableItemWithRarity.spawnableItem.itemName}");
 #endif
 
         GrabbableObject grabbableObjectComponent = spawnedScrap.GetComponent<GrabbableObject>();

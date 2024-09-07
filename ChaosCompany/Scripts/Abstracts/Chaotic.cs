@@ -1,7 +1,6 @@
 ﻿using Unity.Netcode;
-using Timer = ChaosCompany.Scripts.Components.Timer;
 
-namespace ChaosCompany.Scripts.ChaoticThings;
+namespace ChaosCompany.Scripts.Abstracts;
 
 public abstract class Chaotic
 {
@@ -9,13 +8,18 @@ public abstract class Chaotic
     public NetworkObject? NetworkObject { get; protected set; }
     public bool ItsJoever { get; protected set; }
 
-    protected Timer changeType;
-
-    public Chaotic(RoundManager roundManager, Timer changeType)
+    public Chaotic(RoundManager roundManager)
     {
         RoundManager = roundManager;
-        this.changeType = changeType;
     }
 
-    public abstract Chaotic? Spawn();
+    public virtual void Update()
+    {
+
+    }
+
+    public virtual Chaotic? Spawn()
+    {
+        return null;
+    }
 }
