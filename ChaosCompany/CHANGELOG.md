@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [1.1.2] - 9/7/2024
+
+Minor changelog changes
+
+### Changed
+- Forgot to include someone to the changelog
+
 ## [1.1.1] - 9/7/2024
 
 Minor chaotic item update
