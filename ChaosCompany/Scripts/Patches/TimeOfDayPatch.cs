@@ -27,6 +27,6 @@ static class TimeOfDayPatch
 
         Instance = __instance;
 
-        __instance.globalTimeSpeedMultiplier = Random.Range(0.25f, 1.0f);
+        __instance.globalTimeSpeedMultiplier = Random.Range(0.25f, 1.75f);
     }
 }
