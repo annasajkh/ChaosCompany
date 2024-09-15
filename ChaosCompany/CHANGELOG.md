@@ -4,6 +4,20 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+
+## [1.1.4] - 9/15/2024
+
+Change and fixed a bunch of stuff
+
+### Changed
+- Enemy spawning sync with the time multiplier
+- Now it's possible for all mod enemy to actually spawn
+- Remove chaotic item because sometimes it just break the game and i can't fix it
+
+### Fixed
+- Fix move enemy now it should fucking work 100%
+- Fix Spawn rate doesn't actually change lol
+
 ## [1.1.3] - 9/12/2024
 
 globalTimeSpeedMultiplier changes

@@ -87,6 +87,10 @@ public class ChaoticEnemy : ChaoticEntities
             changeType.Finished = true;
             ItsJoever = true;
         }
+        else
+        {
+            Inside = !EnemyAI.isOutside;
+        }
     }
 
     public override Chaotic? Spawn()

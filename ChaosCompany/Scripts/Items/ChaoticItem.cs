@@ -21,6 +21,16 @@ public class ChaoticItem : Chaotic
             }
 
             NetworkObject = GameManager.SwitchToRandomItemType(roundManager, NetworkObject);
+
+            if (NetworkObject is null)
+            {
+#if DEBUG
+                Plugin.Logger.LogError("A chaotic item has been pickup by a player");
+#endif
+                changeType.Stop();
+                changeType.Finished = true;
+                ItsJoever = true;
+            }
         };
 
         GameManager.Timers.Add(changeType);
@@ -41,7 +51,7 @@ public class ChaoticItem : Chaotic
             changeType.Stop();
             changeType.Finished = true;
             ItsJoever = true;
-         }
+        }
     }
 
     public override Chaotic? Spawn()
@@ -78,10 +88,9 @@ public class ChaoticItem : Chaotic
         grabbableObjectComponent.fallTime = 0;
         grabbableObjectComponent.SetScrapValue(Random.Range(5, 150));
 
-        NetworkObject grabbableObjectNetworkObject = grabbableObjectComponent.GetComponent<NetworkObject>();
-        grabbableObjectNetworkObject.Spawn();
+        grabbableObjectComponent.NetworkObject.Spawn();
 
-        NetworkObject = grabbableObjectNetworkObject;
+        NetworkObject = grabbableObjectComponent.NetworkObject;
 
         changeType.Start();
 

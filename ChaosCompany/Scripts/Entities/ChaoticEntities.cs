@@ -13,7 +13,7 @@ public class ChaoticEntities : Chaotic
     protected string kindString;
     List<string>? exclusion;
 
-    public bool Inside { get; private set; }
+    public bool Inside { get; protected set; }
 
     public ChaoticEntities(RoundManager roundManager, bool inside, List<string>? exclusion) : base(roundManager)
     {

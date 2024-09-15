@@ -3,21 +3,24 @@ using ChaosCompany.Scripts.DataStructures;
 using ChaosCompany.Scripts.Managers;
 using GameNetcodeStuff;
 using UnityEngine.AI;
-using Vector2 = UnityEngine.Vector2;
 using Timer = ChaosCompany.Scripts.Components.Timer;
+using UnityEngine;
+using Unity.Netcode;
 
 namespace ChaosCompany.Scripts.Entities;
 
 public class MoveEnemy : ChaoticEntities
 {
     PlayerControllerB? closestPlayer;
+    Vector3 lastClosestPlayerPosition;
     NavMeshAgent? navMeshAgent;
     Timer findClosestPlayerDelay;
+    Vector3? freezePosition;
 
     string playerUsername = "";
     string previousPlayerUsername = "";
 
-    public MoveEnemy(RoundManager roundManager, bool inside) : base(roundManager, inside, ["RedLocust", "Doublewing", "mech", "FlowerSnake", "DocileLocust", "double", "Centipede", "blob", "worm", "puffer"])
+    public MoveEnemy(RoundManager roundManager, bool inside) : base(roundManager, inside, ["forest", "RedLocust", "Doublewing", "FlowerSnake", "DocileLocust", "double", "Centipede", "puffer"])
     {
         findClosestPlayerDelay = new Timer(waitTime: 1, false);
 
@@ -28,7 +31,12 @@ public class MoveEnemy : ChaoticEntities
                 return;
             }
 
-            closestPlayer = GameManager.GetClosestPlayer(RoundManager, NetworkObject.gameObject.transform.position);
+            if (EnemyAI is null)
+            {
+                return;
+            }
+
+            closestPlayer = GameManager.GetClosestPlayerWithLineOfSight(RoundManager, EnemyAI);
 
             if (closestPlayer is null)
             {
@@ -73,35 +81,27 @@ public class MoveEnemy : ChaoticEntities
             return;
         }
 
+        EnemyAIAdditionalData enemyAIAdditionalData = NetworkObject.gameObject.GetComponent<EnemyAIAdditionalData>();
+
         if (closestPlayer is null)
         {
+            enemyAIAdditionalData.paused = false;
             return;
         }
 
-        EnemyAIAdditionalData enemyAIAdditionalData = NetworkObject.gameObject.GetComponent<EnemyAIAdditionalData>();
-
-        if (new Vector2(closestPlayer.thisController.velocity.x, closestPlayer.thisController.velocity.z).magnitude >= 0.5f)
-        {
-            enemyAIAdditionalData.paused = false;
-        }
-        else
-        {
-            enemyAIAdditionalData.paused = true;
-        }
+        enemyAIAdditionalData.paused = closestPlayer.timeSincePlayerMoving > 0.05f;
 
         if (enemyAIAdditionalData.paused)
         {
-            if (EnemyAI.stunnedByPlayer == null)
+            if (freezePosition is Vector3 position)
             {
-                EnemyAI.SetEnemyStunned(true, 10000, closestPlayer);
+                NetworkObject.transform.position = position;
+                EnemyAI.SyncPositionToClients();
             }
         }
         else
         {
-            if (EnemyAI.stunnedByPlayer != null)
-            {
-                EnemyAI.SetEnemyStunned(false, 10000, closestPlayer);
-            }
+            freezePosition = NetworkObject.transform.position;
         }
     }
 

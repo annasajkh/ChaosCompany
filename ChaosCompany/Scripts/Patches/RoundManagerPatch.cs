@@ -52,11 +52,12 @@ static class RoundManagerPatch
             {
                 GameManager.chaoticEntities[i].Update();
 
+                // its joever
                 if (GameManager.chaoticEntities[i].ItsJoever)
                 {
+                    // sike chaotic enemy can die but they will get reincarnated with different form at different time
                     if (GameManager.chaoticEntities[i] is ChaoticEnemy)
                     {
-                        // chaotic enemy can die but they will get reincarnated with different form at different time
                         Timer chaoticEnemyRespawnCooldown = new Timer(waitTime: Random.Range(60 * 2, 60 * 2 + 30), oneshot: true);
 
                         chaoticEnemyRespawnCooldown.OnTimeout += () =>
@@ -80,10 +81,19 @@ static class RoundManagerPatch
                 GameManager.StartSpawning(Instance);
                 Plugin.Logger.LogError("Chaos is starting");
 
-                for (int i = 0; i < GameManager.maxChaoticItemSpawn; i++)
+                Timer spawnChaoticItemTimer = new(waitTime: 5, true);
+
+                spawnChaoticItemTimer.OnTimeout += () =>
                 {
-                    GameManager.SpawnChaoticItem(Instance);
-                }
+                    for (int i = 0; i < GameManager.maxChaoticItemSpawn; i++)
+                    {
+                        GameManager.SpawnChaoticItem(Instance);
+                    }
+                };
+
+                spawnChaoticItemTimer.Start();
+
+                GameManager.Timers.Add(spawnChaoticItemTimer);
 
                 GameManager.spawnEnemyTimer.Start();
                 GameManager.beginChaos = true;

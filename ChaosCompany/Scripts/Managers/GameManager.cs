@@ -1,6 +1,5 @@
 ﻿using ChaosCompany.Scripts.Abstracts;
 using ChaosCompany.Scripts.Components;
-using ChaosCompany.Scripts.Items;
 using ChaosCompany.Scripts.Patches;
 using Dissonance.Integrations.Unity_NFGO;
 using GameNetcodeStuff;
@@ -12,6 +11,7 @@ using UnityEngine;
 using UnityEngine.AI;
 using Random = UnityEngine.Random;
 using ChaosCompany.Scripts.Entities;
+using ChaosCompany.Scripts.Items;
 
 namespace ChaosCompany.Scripts.Managers;
 
@@ -26,18 +26,20 @@ public static class GameManager
     public static List<Timer> Timers { get; private set; } = new();
     public static bool gameOver;
 
-    public static Timer spawnEnemyTimer = new(waitTime: Random.Range(60 * 2, 60 * 2 + 30), oneshot: false);
+    public static Timer spawnEnemyTimer = new(waitTime: Random.Range(60 * 3, 60 * 4), oneshot: false);
     public static EnemySpawnType[] spawnTypes = [EnemySpawnType.Inside, EnemySpawnType.Outside];
 
     public static List<Chaotic> chaoticEntities = new();
 
     public static int numberOfTriesOfSpawningRandomEnemyNearPlayer = 6;
-    public static int maxEnemyNumber = Random.Range(2, 4);
-    public static int enemyNumber = 0;
+    public static int modMaxEnemyNumber = Random.Range(2, 4);
+    public static int modEnemyNumber = 0;
     public static int maxChaoticEnemySpawn = 2;
     public static int maxMoveEnemySpawn = 2;
     public static int maxChaoticItemSpawn = Random.Range(2, 5);
+
     public static bool beginChaos;
+    public static float timeMultiplier;
 
     public static void Reset()
     {
@@ -90,56 +92,20 @@ public static class GameManager
             chaoticEntity.NetworkObject.Despawn();
         }
 
-
         PlayerControllerBPatch.isEnemyAlreadySpawnedOnItemPosition = false;
         chaoticEntities.Clear();
-        enemyNumber = 0;
-        maxChaoticItemSpawn = Random.Range(2, 5);
+        modEnemyNumber = 0;
 
-        maxEnemyNumber = Random.Range(2, 6);
+        // temp
+        //  Random.Range(2, 5)
+        maxChaoticItemSpawn = 30;
+
+        modMaxEnemyNumber = Random.Range(2, 4);
         maxChaoticEnemySpawn = 2;
         maxMoveEnemySpawn = 2;
-        spawnEnemyTimer = new(waitTime: Random.Range(60 * 2, 60 * 2 + 30), oneshot: false);
-        
+
         beginChaos = false;
         numberOfTriesOfSpawningRandomEnemyNearPlayer = 6;
-    }
-
-    public static NetworkObject? SpawnRandomItem(RoundManager roundManager, Vector3 position, int worth)
-    {
-        if (roundManager.currentLevel.spawnableScrap.Count == 0)
-        {
-            Plugin.Logger.LogError("No spawnable scrap in the level");
-            return null;
-        }
-
-        SpawnableItemWithRarity spawnableItemWithRarity = roundManager.currentLevel.spawnableScrap[Random.Range(0, roundManager.currentLevel.spawnableScrap.Count)];
-
-        GameObject spawnedScrap = UnityEngine.Object.Instantiate(spawnableItemWithRarity.spawnableItem.spawnPrefab, position, Quaternion.identity);
-        GrabbableObject grabbableObjectComponent = spawnedScrap.GetComponent<GrabbableObject>();
-
-        grabbableObjectComponent.transform.rotation = Quaternion.Euler(grabbableObjectComponent.itemProperties.restingRotation);
-        grabbableObjectComponent.fallTime = 0;
-        grabbableObjectComponent.SetScrapValue(worth);
-
-        NetworkObject grabbableObjectNetworkObject = grabbableObjectComponent.GetComponent<NetworkObject>();
-        grabbableObjectNetworkObject.Spawn();
-
-        return grabbableObjectNetworkObject;
-    }
-
-    public static NetworkObject? SwitchToRandomItemType(RoundManager roundManager, NetworkObject scrapTarget)
-    {
-        Vector3 scrapOldPosition = scrapTarget.gameObject.transform.position;
-
-        GrabbableObject grabbableObject = scrapTarget.gameObject.GetComponent<GrabbableObject>();
-
-        if (scrapTarget.IsSpawned)
-        {
-            scrapTarget.Despawn();
-        }
-
-        return SpawnRandomItem(roundManager, scrapOldPosition + new Vector3(0, 0.5f, 0), Random.Range(5, 150));
     }
 
     public static (EnemyType?, NetworkObjectReference?) SpawnRandomEnemy(RoundManager roundManager, bool inside, Vector3 position, float yRotation = 0, List<string>? exclusion = null)
@@ -242,7 +208,7 @@ public static class GameManager
         }
     }
 
-    public static PlayerControllerB? GetClosestPlayer(RoundManager roundManager, Vector3 position)
+    public static PlayerControllerB? GetClosestPlayerWithLineOfSight(RoundManager roundManager, EnemyAI enemyAI)
     {
         List<PlayerControllerB> players = roundManager.playersManager.allPlayerScripts.ToList();
 
@@ -266,7 +232,17 @@ public static class GameManager
 
         for (int i = 0; i < players.Count; i++)
         {
-            if (Vector3.Distance(players[i].transform.position, position) < Vector3.Distance(closestPlayer.transform.position, position))
+            if (!enemyAI.CheckLineOfSightForPosition(players[i].NetworkObject.transform.position, width: 360, range: 100000))
+            {
+                continue;
+            }
+
+            if (players[i].isPlayerDead)
+            {
+                continue;
+            }
+
+            if (Vector3.Distance(players[i].NetworkObject.transform.position, enemyAI.NetworkObject.transform.position) < Vector3.Distance(closestPlayer.NetworkObject.transform.position, enemyAI.NetworkObject.transform.position))
             {
                 closestPlayer = players[i];
             }
@@ -462,6 +438,66 @@ public static class GameManager
         spawnEnemyWaitTimer.Start();
     }
 
+    public static void SpawnChaoticItem(RoundManager roundManager)
+    {
+        if (roundManager is null)
+        {
+            Plugin.Logger.LogError("roundManager is null");
+            return;
+        }
+
+        ChaoticItem? chaoticItem = new ChaoticItem(roundManager);
+
+        if (chaoticItem.Spawn() is null)
+        {
+            Plugin.Logger.LogError("Cannot spawn chaotic item");
+            return;
+        }
+
+        chaoticEntities.Add(chaoticItem);
+    }
+
+    public static NetworkObject? SwitchToRandomItemType(RoundManager roundManager, NetworkObject scrapTarget)
+    {
+        Vector3 scrapOldPosition = scrapTarget.gameObject.transform.position;
+
+        GrabbableObject grabbableObject = scrapTarget.gameObject.GetComponent<GrabbableObject>();
+
+        if (grabbableObject.isHeld || grabbableObject.playerHeldBy is not null)
+        {
+            return null;
+        }
+
+        if (scrapTarget.IsSpawned)
+        {
+            scrapTarget.Despawn();
+        }
+
+        return SpawnRandomItem(roundManager, scrapOldPosition + new Vector3(0, 0.5f, 0), Random.Range(5, 150));
+    }
+
+    public static NetworkObject? SpawnRandomItem(RoundManager roundManager, Vector3 position, int worth)
+    {
+        if (roundManager.currentLevel.spawnableScrap.Count == 0)
+        {
+            Plugin.Logger.LogError("No spawnable scrap in the level");
+            return null;
+        }
+
+        SpawnableItemWithRarity spawnableItemWithRarity = roundManager.currentLevel.spawnableScrap[Random.Range(0, roundManager.currentLevel.spawnableScrap.Count)];
+
+        GameObject spawnedScrap = UnityEngine.Object.Instantiate(spawnableItemWithRarity.spawnableItem.spawnPrefab, position, Quaternion.identity);
+        GrabbableObject grabbableObjectComponent = spawnedScrap.GetComponent<GrabbableObject>();
+
+        grabbableObjectComponent.transform.rotation = Quaternion.Euler(grabbableObjectComponent.itemProperties.restingRotation);
+        grabbableObjectComponent.fallTime = 0;
+        grabbableObjectComponent.SetScrapValue(worth);
+
+        grabbableObjectComponent.NetworkObject.Spawn();
+
+        return grabbableObjectComponent.NetworkObject;
+    }
+
     public static NetworkObjectReference? SwitchToRandomEnemyType(RoundManager roundManager, EnemyAI? enemyTarget, bool inside, NetworkObject networkObject)
     {
         Plugin.Logger.LogError("Trying to switch an enemy type to random enemy");
@@ -516,6 +552,7 @@ public static class GameManager
 
         if (enemyTarget.IsSpawned)
         {
+            networkObject.RemoveOwnership();
             networkObject.Despawn();
         }
 
@@ -548,25 +585,6 @@ public static class GameManager
         chaoticEntities.Add(moveEnemy);
     }
 
-    public static void SpawnChaoticItem(RoundManager roundManager)
-    {
-        if (roundManager is null)
-        {
-            Plugin.Logger.LogError("roundManager is null");
-            return;
-        }
-
-        ChaoticItem? chaoticItem = new ChaoticItem(roundManager);
-
-        if (chaoticItem.Spawn() is null)
-        {
-            Plugin.Logger.LogError("Cannot spawn chaotic item");
-            return;
-        }
-
-        chaoticEntities.Add(chaoticItem);
-    }
-
     public static void StartSpawning(RoundManager roundManager)
     {
         Plugin.Logger.LogError("Start spawning enemies");
@@ -579,7 +597,7 @@ public static class GameManager
 
         spawnEnemyTimer.OnTimeout += () =>
         {
-            if (enemyNumber >= maxEnemyNumber)
+            if (modEnemyNumber >= modMaxEnemyNumber)
             {
                 spawnEnemyTimer.Stop();
                 return;
@@ -587,28 +605,30 @@ public static class GameManager
 
             if (Random.Range(0.0f, 1.0f) > 0.5f)
             {
-                // spawn the silliest
-                if (maxChaoticEnemySpawn != 0)
+                if (Random.Range(0.0f, 1.0f) > 0.5f)
                 {
-                    SpawnChaoticEnemy(roundManager);
+                    // spawn the silliest
+                    if (maxChaoticEnemySpawn != 0)
+                    {
+                        SpawnChaoticEnemy(roundManager);
 
-                    maxChaoticEnemySpawn--;
-                    return;
+                        maxChaoticEnemySpawn--;
+                        return;
+                    }
+
                 }
-
-            }
-            else
-            {
-                // spawn another silly 
-                if (maxMoveEnemySpawn != 0)
+                else
                 {
-                    SpawnMoveEnemy(roundManager);
+                    // spawn another silly 
+                    if (maxMoveEnemySpawn != 0)
+                    {
+                        SpawnMoveEnemy(roundManager);
 
-                    maxMoveEnemySpawn--;
-                    return;
+                        maxMoveEnemySpawn--;
+                        return;
+                    }
                 }
             }
-
 
             EnemySpawnType spawnType;
 
@@ -651,7 +671,7 @@ public static class GameManager
                         if (Random.Range(0, 100) <= 20)
                         {
                             SpawnRandomEnemyNearRandomPlayer(roundManager, inside: true);
-                            enemyNumber++;
+                            modEnemyNumber++;
                             return;
                         }
 
@@ -699,14 +719,14 @@ public static class GameManager
 #endif
                         }
 
-                        enemyNumber++;
+                        modEnemyNumber++;
                         break;
 
                     case EnemySpawnType.Outside:
                         if (Random.Range(0, 100) <= 20)
                         {
                             SpawnRandomEnemyNearRandomPlayer(roundManager, inside: false);
-                            enemyNumber++;
+                            modEnemyNumber++;
                             return;
                         }
 
@@ -740,7 +760,7 @@ public static class GameManager
 #if DEBUG
                         Plugin.Logger.LogError($"Spawning {outsideEnemyToSpawn.enemyType.enemyName} Outside");
 #endif
-                        enemyNumber++;
+                        modEnemyNumber++;
                         break;
                 }
             }
