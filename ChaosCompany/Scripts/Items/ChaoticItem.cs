@@ -1,4 +1,5 @@
 ﻿using ChaosCompany.Scripts.Abstracts;
+using ChaosCompany.Scripts.DataStructures;
 using ChaosCompany.Scripts.Managers;
 using Unity.Netcode;
 using UnityEngine;
@@ -15,21 +16,28 @@ public class ChaoticItem : Chaotic
         changeType = new(waitTime: 1, oneshot: false);
         changeType.OnTimeout += () =>
         {
-            if (NetworkObject is null)
+            if (NetworkObject == null)
             {
                 return;
             }
 
-            NetworkObject = GameManager.SwitchToRandomItemType(roundManager, NetworkObject);
-
-            if (NetworkObject is null)
+            if (NetworkObject.gameObject.GetComponent<GrabbableObject>() is GrabbableObject grabbableObject)
             {
+
+                if (NetworkObject.gameObject.GetComponent<ChaoticItemAdditionalData>() is ChaoticItemAdditionalData chaoticItemAdditionalData)
+                {
+                    if (chaoticItemAdditionalData.pickedUp)
+                    {
 #if DEBUG
-                Plugin.Logger.LogError("A chaotic item has been pickup by a player");
+                        Plugin.Logger.LogError("Fucking stop changing");
 #endif
-                changeType.Stop();
-                changeType.Finished = true;
-                ItsJoever = true;
+                        changeType.Stop();
+                        changeType.Finished = true;
+                        ItsJoever = true;
+                    }
+                }
+
+                grabbableObject.scrapValue = Random.Range(10, 150);
             }
         };
 
@@ -38,7 +46,7 @@ public class ChaoticItem : Chaotic
 
     public override void Update()
     {
-        if (NetworkObject is null)
+        if (NetworkObject == null)
         {
             return;
         }
@@ -86,11 +94,12 @@ public class ChaoticItem : Chaotic
 
         grabbableObjectComponent.transform.rotation = Quaternion.Euler(grabbableObjectComponent.itemProperties.restingRotation);
         grabbableObjectComponent.fallTime = 0;
-        grabbableObjectComponent.SetScrapValue(Random.Range(5, 150));
+        grabbableObjectComponent.scrapValue = Random.Range(5, 150);
 
         grabbableObjectComponent.NetworkObject.Spawn();
 
         NetworkObject = grabbableObjectComponent.NetworkObject;
+        NetworkObject.gameObject.AddComponent<ChaoticItemAdditionalData>();
 
         changeType.Start();
 

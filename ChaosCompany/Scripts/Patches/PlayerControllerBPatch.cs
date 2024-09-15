@@ -1,4 +1,5 @@
-﻿using ChaosCompany.Scripts.Managers;
+﻿using ChaosCompany.Scripts.DataStructures;
+using ChaosCompany.Scripts.Managers;
 using GameNetcodeStuff;
 using HarmonyLib;
 using Unity.Netcode;
@@ -45,7 +46,7 @@ static class PlayerControllerBPatch
             return;
         }
 
-        if (__instance is null || NetworkManager.Singleton is null || RoundManagerPatch.Instance is null)
+        if (__instance == null || NetworkManager.Singleton == null || RoundManagerPatch.Instance == null)
         {
             return;
         }
@@ -57,6 +58,13 @@ static class PlayerControllerBPatch
             return;
         }
 
+        if (grabbedObjectResult.GetComponent<ChaoticItemAdditionalData>() is ChaoticItemAdditionalData chaoticItemAdditionalData)
+        {
+#if DEBUG
+            Plugin.Logger.LogError("Fucking stop switching");
+#endif
+            chaoticItemAdditionalData.pickedUp = true;
+        }
 
         if (RoundManagerPatch.Instance.currentLevel.Enemies.Count == 0)
         {
@@ -77,7 +85,7 @@ static class PlayerControllerBPatch
         {
             (EnemyType? enemySpawnedType, NetworkObjectReference? networkObjectReference) = GameManager.SpawnRandomEnemy(roundManager: RoundManagerPatch.Instance, inside: true, position: grabbedObjectResult.transform.position, exclusion: ["dressedgirl"]);
 
-            if (enemySpawnedType is null)
+            if (enemySpawnedType == null)
             {
                 return;
             }
@@ -90,7 +98,7 @@ static class PlayerControllerBPatch
         {
             (EnemyType? enemySpawnedType, NetworkObjectReference? networkObjectReference) = GameManager.SpawnRandomEnemy(roundManager: RoundManagerPatch.Instance, inside: false, position: grabbedObjectResult.transform.position, exclusion: ["mech", "worm", "double"]);
 
-            if (enemySpawnedType is null)
+            if (enemySpawnedType == null)
             {
                 return;
             }

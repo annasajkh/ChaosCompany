@@ -26,19 +26,19 @@ public class MoveEnemy : ChaoticEntities
 
         findClosestPlayerDelay.OnTimeout += () =>
         {
-            if (NetworkObject is null)
+            if (NetworkObject == null)
             {
                 return;
             }
 
-            if (EnemyAI is null)
+            if (EnemyAI == null)
             {
                 return;
             }
 
             closestPlayer = GameManager.GetClosestPlayerWithLineOfSight(RoundManager, EnemyAI);
 
-            if (closestPlayer is null)
+            if (closestPlayer == null)
             {
                 return;
             }
@@ -64,12 +64,12 @@ public class MoveEnemy : ChaoticEntities
             return;
         }
 
-        if (EnemyAI is null)
+        if (EnemyAI == null)
         {
             return;
         }
 
-        if (NetworkObject is null)
+        if (NetworkObject == null)
         {
             return;
         }
@@ -83,7 +83,7 @@ public class MoveEnemy : ChaoticEntities
 
         EnemyAIAdditionalData enemyAIAdditionalData = NetworkObject.gameObject.GetComponent<EnemyAIAdditionalData>();
 
-        if (closestPlayer is null)
+        if (closestPlayer == null)
         {
             enemyAIAdditionalData.paused = false;
             return;
@@ -109,21 +109,21 @@ public class MoveEnemy : ChaoticEntities
     {
         MoveEnemy? moveEnemy = (MoveEnemy?)base.Spawn();
 
-        if (EnemyAI is null)
+        if (EnemyAI == null)
         {
             Plugin.Logger.LogError("EnemyAI shouldn't be null here");
             return null;
         }
 
-        if (moveEnemy is null)
+        if (moveEnemy == null)
         {
-            Plugin.Logger.LogError("Move enemy is null");
+            Plugin.Logger.LogError("Move enemy == null");
             return null;
         }
 
-        if (moveEnemy.NetworkObject is null)
+        if (moveEnemy.NetworkObject == null)
         {
-            Plugin.Logger.LogError("Move enemy NetworkObject is null");
+            Plugin.Logger.LogError("Move enemy NetworkObject == null");
             return null;
         }
 

@@ -80,14 +80,14 @@ public class ChaoticEntities : Chaotic
 
         (EnemyType? enemySpawnedType, NetworkObjectReference? networkObjectReference) = GameManager.SpawnRandomEnemy(RoundManager, inside: Inside, position, yRotation: y, exclusion);
 
-        if (enemySpawnedType is null || networkObjectReference is null)
+        if (enemySpawnedType == null || networkObjectReference == null)
         {
             return null;
         }
 
-        if (networkObjectReference is null)
+        if (networkObjectReference == null)
         {
-            Plugin.Logger.LogError("Error networkObjectReference is null when trying to spawn chaotic entity");
+            Plugin.Logger.LogError("Error networkObjectReference == null when trying to spawn chaotic entity");
             return null;
         }
 

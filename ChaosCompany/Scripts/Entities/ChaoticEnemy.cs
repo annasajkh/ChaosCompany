@@ -27,27 +27,27 @@ public class ChaoticEnemy : ChaoticEntities
                 return;
             }
 
-            if (NetworkObject is null)
+            if (NetworkObject == null)
             {
-                Plugin.Logger.LogError("NetworkObject is null");
+                Plugin.Logger.LogError("NetworkObject == null");
                 return;
             }
 
-            if (EnemyAI is null)
+            if (EnemyAI == null)
             {
-                Plugin.Logger.LogError("enemyAI is null");
+                Plugin.Logger.LogError("enemyAI == null");
                 return;
             }
 
-            if (NetworkObject?.gameObject is null)
+            if (NetworkObject?.gameObject == null)
             {
-                Plugin.Logger.LogError("NetworkObject.gameObject is null");
+                Plugin.Logger.LogError("NetworkObject.gameObject == null");
                 return;
             }
 
-            if (NetworkObject.gameObject is null)
+            if (NetworkObject.gameObject == null)
             {
-                Plugin.Logger.LogError("A chaotic enemy gameObject is null");
+                Plugin.Logger.LogError("A chaotic enemy gameObject == null");
                 return;
             }
 
@@ -64,7 +64,7 @@ public class ChaoticEnemy : ChaoticEntities
             }
             else
             {
-                Plugin.Logger.LogError("networkObjectReference is null after switching enemy type");
+                Plugin.Logger.LogError("networkObjectReference == null after switching enemy type");
             }
 
             isChaoticEnemyAlreadyTryingToChange = !isChaoticEnemyAlreadyTryingToChange;
@@ -75,7 +75,7 @@ public class ChaoticEnemy : ChaoticEntities
 
     public override void Update()
     {
-        if (EnemyAI is null)
+        if (EnemyAI == null)
         {
             return;
         }
@@ -97,12 +97,12 @@ public class ChaoticEnemy : ChaoticEntities
     {
         ChaoticEnemy? chaoticEnemy = (ChaoticEnemy?)base.Spawn();
 
-        if (chaoticEnemy is null)
+        if (chaoticEnemy == null)
         {
             return null;
         }
 
-        if (EnemyAI is null)
+        if (EnemyAI == null)
         {
             Plugin.Logger.LogError("EnemyAI shouldn't be null here");
             return null;

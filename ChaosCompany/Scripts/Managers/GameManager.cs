@@ -49,9 +49,9 @@ public static class GameManager
 
         foreach (var chaoticEntity in chaoticEntities)
         {
-            if (chaoticEntity.NetworkObject is null)
+            if (chaoticEntity.NetworkObject == null)
             {
-                Plugin.Logger.LogError("Despawning chaotic entities failed because network object is null");
+                Plugin.Logger.LogError("Despawning chaotic entities failed because network object == null");
                 continue;
             }
 
@@ -63,9 +63,9 @@ public static class GameManager
 
             if (chaoticEntity is ChaoticEnemy chaoticEnemy)
             {
-                if (chaoticEnemy.EnemyAI is null)
+                if (chaoticEnemy.EnemyAI == null)
                 {
-                    Plugin.Logger.LogError("chaoticEnemy.EnemyAI is null while trying to print the enemy");
+                    Plugin.Logger.LogError("chaoticEnemy.EnemyAI == null while trying to print the enemy");
 
                     chaoticEntity.NetworkObject.Despawn();
                     continue;
@@ -75,9 +75,9 @@ public static class GameManager
             }
             else if (chaoticEntity is MoveEnemy moveEnemy)
             {
-                if (moveEnemy.EnemyAI is null)
+                if (moveEnemy.EnemyAI == null)
                 {
-                    Plugin.Logger.LogError("moveEnemy.EnemyAI is null while trying to print the enemy");
+                    Plugin.Logger.LogError("moveEnemy.EnemyAI == null while trying to print the enemy");
                     chaoticEntity.NetworkObject.Despawn();
                     continue;
                 }
@@ -96,9 +96,7 @@ public static class GameManager
         chaoticEntities.Clear();
         modEnemyNumber = 0;
 
-        // temp
-        //  Random.Range(2, 5)
-        maxChaoticItemSpawn = 30;
+        maxChaoticItemSpawn = Random.Range(2, 5);
 
         modMaxEnemyNumber = Random.Range(2, 4);
         maxChaoticEnemySpawn = 2;
@@ -320,7 +318,7 @@ public static class GameManager
 
         PlayerControllerB? randomAlivePlayer = GetRandomAlivePlayer(roundManager, inside);
 
-        if (randomAlivePlayer is null)
+        if (randomAlivePlayer == null)
         {
             return;
         }
@@ -407,7 +405,7 @@ public static class GameManager
                 // Time to be silly
                 (EnemyType? enemySpawnedType, NetworkObjectReference? networkObjectReference) = SpawnRandomEnemy(roundManager, inside: true, position: targetPositionPrevious, exclusion: ["DressGirl"]);
 
-                if (enemySpawnedType is null)
+                if (enemySpawnedType == null)
                 {
                     return;
                 }
@@ -420,7 +418,7 @@ public static class GameManager
                 // Time to be silly
                 (EnemyType? enemySpawnedType, NetworkObjectReference? networkObjectReference) = SpawnRandomEnemy(roundManager, inside: false, position: targetPositionPrevious, exclusion: ["mech", "worm", "double"]);
 
-                if (enemySpawnedType is null)
+                if (enemySpawnedType == null)
                 {
                     return;
                 }
@@ -440,15 +438,15 @@ public static class GameManager
 
     public static void SpawnChaoticItem(RoundManager roundManager)
     {
-        if (roundManager is null)
+        if (roundManager == null)
         {
-            Plugin.Logger.LogError("roundManager is null");
+            Plugin.Logger.LogError("roundManager == null");
             return;
         }
 
         ChaoticItem? chaoticItem = new ChaoticItem(roundManager);
 
-        if (chaoticItem.Spawn() is null)
+        if (chaoticItem.Spawn() == null)
         {
             Plugin.Logger.LogError("Cannot spawn chaotic item");
             return;
@@ -457,68 +455,27 @@ public static class GameManager
         chaoticEntities.Add(chaoticItem);
     }
 
-    public static NetworkObject? SwitchToRandomItemType(RoundManager roundManager, NetworkObject scrapTarget)
-    {
-        Vector3 scrapOldPosition = scrapTarget.gameObject.transform.position;
-
-        GrabbableObject grabbableObject = scrapTarget.gameObject.GetComponent<GrabbableObject>();
-
-        if (grabbableObject.isHeld || grabbableObject.playerHeldBy is not null)
-        {
-            return null;
-        }
-
-        if (scrapTarget.IsSpawned)
-        {
-            scrapTarget.Despawn();
-        }
-
-        return SpawnRandomItem(roundManager, scrapOldPosition + new Vector3(0, 0.5f, 0), Random.Range(5, 150));
-    }
-
-    public static NetworkObject? SpawnRandomItem(RoundManager roundManager, Vector3 position, int worth)
-    {
-        if (roundManager.currentLevel.spawnableScrap.Count == 0)
-        {
-            Plugin.Logger.LogError("No spawnable scrap in the level");
-            return null;
-        }
-
-        SpawnableItemWithRarity spawnableItemWithRarity = roundManager.currentLevel.spawnableScrap[Random.Range(0, roundManager.currentLevel.spawnableScrap.Count)];
-
-        GameObject spawnedScrap = UnityEngine.Object.Instantiate(spawnableItemWithRarity.spawnableItem.spawnPrefab, position, Quaternion.identity);
-        GrabbableObject grabbableObjectComponent = spawnedScrap.GetComponent<GrabbableObject>();
-
-        grabbableObjectComponent.transform.rotation = Quaternion.Euler(grabbableObjectComponent.itemProperties.restingRotation);
-        grabbableObjectComponent.fallTime = 0;
-        grabbableObjectComponent.SetScrapValue(worth);
-
-        grabbableObjectComponent.NetworkObject.Spawn();
-
-        return grabbableObjectComponent.NetworkObject;
-    }
-
     public static NetworkObjectReference? SwitchToRandomEnemyType(RoundManager roundManager, EnemyAI? enemyTarget, bool inside, NetworkObject networkObject)
     {
         Plugin.Logger.LogError("Trying to switch an enemy type to random enemy");
 
         #region null checking
 
-        if (enemyTarget is null)
+        if (enemyTarget == null)
         {
-            Plugin.Logger.LogError("enemyTarget target is null");
+            Plugin.Logger.LogError("enemyTarget target == null");
             return null;
         }
 
-        if (enemyTarget.thisNetworkObject is null)
+        if (enemyTarget.thisNetworkObject == null)
         {
-            Plugin.Logger.LogError("enemyTarget.thisNetworkObject is null");
+            Plugin.Logger.LogError("enemyTarget.thisNetworkObject == null");
             return null;
         }
 
-        if (roundManager?.currentLevel.Enemies is null)
+        if (roundManager?.currentLevel.Enemies == null)
         {
-            Plugin.Logger.LogError("roundManager?.currentLevel.Enemies is null");
+            Plugin.Logger.LogError("roundManager?.currentLevel.Enemies == null");
             return null;
         }
 
@@ -532,15 +489,15 @@ public static class GameManager
 
         (EnemyType? enemySpawnedType, NetworkObjectReference? networkObjectReference) = SpawnRandomEnemy(roundManager, inside: inside, position: enemyTarget.thisNetworkObject.transform.position, exclusion: ["cave", "double", "redlocust", "DressGirl", "Nutcracker", "Spider"]);
 
-        if (enemySpawnedType is null)
+        if (enemySpawnedType == null)
         {
-            Plugin.Logger.LogError("enemySpawnedType is null");
+            Plugin.Logger.LogError("enemySpawnedType == null");
             return null;
         }
 
-        if (networkObjectReference is null)
+        if (networkObjectReference == null)
         {
-            Plugin.Logger.LogError("networkObjectReference is null");
+            Plugin.Logger.LogError("networkObjectReference == null");
             return null;
         }
 
@@ -552,7 +509,6 @@ public static class GameManager
 
         if (enemyTarget.IsSpawned)
         {
-            networkObject.RemoveOwnership();
             networkObject.Despawn();
         }
 
@@ -563,7 +519,7 @@ public static class GameManager
     {
         ChaoticEnemy chaoticEnemy = new ChaoticEnemy(roundManager, inside: Random.Range(0.0f, 1.0f) > 0.2f);
 
-        if (chaoticEnemy.Spawn() is null)
+        if (chaoticEnemy.Spawn() == null)
         {
             Plugin.Logger.LogError("Cannot spawn chaotic enemy");
             return;
@@ -576,7 +532,7 @@ public static class GameManager
     {
         MoveEnemy moveEnemy = new MoveEnemy(roundManager, inside: Random.Range(0.0f, 1.0f) > 0.5f);
 
-        if (moveEnemy.Spawn() is null)
+        if (moveEnemy.Spawn() == null)
         {
             Plugin.Logger.LogError("Cannot spawn move enemy");
             return;
@@ -589,9 +545,9 @@ public static class GameManager
     {
         Plugin.Logger.LogError("Start spawning enemies");
 
-        if (roundManager is null)
+        if (roundManager == null)
         {
-            Plugin.Logger.LogError("Cannot spawn monster roundManager is null");
+            Plugin.Logger.LogError("Cannot spawn monster roundManager == null");
             return;
         }
 
@@ -693,7 +649,7 @@ public static class GameManager
                         {
                             (EnemyType? enemySpawnedType, NetworkObjectReference? networkObjectReference) = SpawnRandomEnemy(roundManager, inside: true, position, yRotation: y);
 
-                            if (enemySpawnedType is null)
+                            if (enemySpawnedType == null)
                             {
                                 return;
                             }
@@ -707,7 +663,7 @@ public static class GameManager
                         {
                             (EnemyType? enemySpawnedType, NetworkObjectReference? networkObjectReference) = SpawnRandomEnemy(roundManager, inside: false, position, exclusion: ["giant", "worm", "double"]);
 
-                            if (enemySpawnedType is null)
+                            if (enemySpawnedType == null)
                             {
                                 Plugin.Logger.LogError($"Cannot spawn enemy inside");
                                 return;
