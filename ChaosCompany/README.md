@@ -14,5 +14,3 @@ Thank you for all my friends who tested the mod Leeroy, Rogue, Tye, Coco, NightC
 And thank you for all of random people on the public lobby that also test it
 
 This mod will not be possible without all of you
-
-source code: https://github.com/annasajkh/git ChaosCompany

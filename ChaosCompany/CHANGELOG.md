@@ -5,6 +5,20 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
 
+## [1.2.5] - 9/17/2024
+
+Minor changes version
+
+### Changed
+- Forgot to change c# project version lol
+
+## [1.2.4] - 9/16/2024
+
+Minor changes to README
+
+### Changed
+- Minor changes to README
+
 ## [1.2.3] - 9/16/2024
 
 Minor changes spawning on item
