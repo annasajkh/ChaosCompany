@@ -4,8 +4,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [1.2.1] - 9/16/2024
 
-## [1.1.4] - 9/16/2024
+Minor changes to the readme and changelog lol
+
+### Changed
+- Minor changes to the readme lol
+
+## [1.2.0] - 9/16/2024
 
 Change and fixed a bunch of stuff
 
