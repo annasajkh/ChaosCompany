@@ -15,4 +15,4 @@ And thank you for all of random people on the public lobby that also test it
 
 This mod will not be possible without all of you
 
-source code: https://github.com/annasajkh/ChaosCompany
+source code: https://github.com/annasajkh/git ChaosCompany
