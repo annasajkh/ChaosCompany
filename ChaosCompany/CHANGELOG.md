@@ -4,6 +4,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+
+## [1.2.2] - 9/16/2024
+
+Minor changes spawning on item
+
+### Changed
+- Exclude the dog and nutcracker because it was probably too brutal and add the worm back
+
 ## [1.2.1] - 9/16/2024
 
 Minor changes to the readme and changelog lol
