@@ -5,6 +5,13 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
 
+## [1.2.3] - 9/16/2024
+
+Minor changes spawning on item
+
+### Changed
+- Exclude the worm that's too brutal
+
 ## [1.2.2] - 9/16/2024
 
 Minor changes spawning on item
