@@ -28,8 +28,8 @@ static class TimeOfDayPatch
 
         Instance = __instance;
 
-        GameManager.timeMultiplier = Random.Range(0.25f, 1.75f);
-        GameManager.spawnEnemyTimer = new(waitTime: 60 * 3 * (1 / GameManager.timeMultiplier), oneshot: false);
+        GameManager.timeMultiplier = Random.Range(0.5f, 1.25f);
+        GameManager.spawnEnemyTimer = new(waitTime: 60 * 3, oneshot: false);
 
         __instance.globalTimeSpeedMultiplier = GameManager.timeMultiplier;
     }

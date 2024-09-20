@@ -5,6 +5,13 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
 
+## [1.2.6] - 9/17/2024
+
+I'M SO SORRY THAT WAS TOO CHAOTIC
+
+### Changed
+- MAKE IT WAY LESS CHAOTIC
+
 ## [1.2.5] - 9/17/2024
 
 Minor changes version
