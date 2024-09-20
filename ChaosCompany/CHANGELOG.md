@@ -5,7 +5,28 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
 
-## [1.2.6] - 9/17/2024
+## [1.2.9] - 9/21/2024
+
+Make it more fair
+
+### Changed
+- Exclude the bee from random chance spawning when picking up item
+
+## [1.2.8] - 9/21/2024
+
+FUCK I MESSUP
+
+### Changed
+- MOVE BACK IN PLACE
+
+## [1.2.7] - 9/21/2024
+
+I'M SO SORRY THAT WAS TOO CHAOTIC
+
+### Changed
+- MOVE BACK IN PLACE
+
+## [1.2.6] - 9/21/2024
 
 I'M SO SORRY THAT WAS TOO CHAOTIC
 

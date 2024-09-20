@@ -39,7 +39,6 @@ public static class GameManager
     public static int maxChaoticItemSpawn = Random.Range(2, 5);
 
     public static bool beginChaos;
-    public static float timeMultiplier;
 
     public static void Reset()
     {
@@ -97,7 +96,7 @@ public static class GameManager
         modEnemyNumber = 0;
 
         maxChaoticItemSpawn = Random.Range(2, 5);
-
+        spawnEnemyTimer = new(waitTime: 60 * 3, oneshot: false);
         modMaxEnemyNumber = Random.Range(2, 4);
         maxChaoticEnemySpawn = 2;
         maxMoveEnemySpawn = 2;

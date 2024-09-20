@@ -1,5 +1,4 @@
-﻿using ChaosCompany.Scripts.Managers;
-using HarmonyLib;
+﻿using HarmonyLib;
 using Unity.Netcode;
 using UnityEngine;
 
@@ -28,9 +27,6 @@ static class TimeOfDayPatch
 
         Instance = __instance;
 
-        GameManager.timeMultiplier = Random.Range(0.5f, 1.25f);
-        GameManager.spawnEnemyTimer = new(waitTime: 60 * 3, oneshot: false);
-
-        __instance.globalTimeSpeedMultiplier = GameManager.timeMultiplier;
+        __instance.globalTimeSpeedMultiplier = Random.Range(0.5f, 1.25f);
     }
 }

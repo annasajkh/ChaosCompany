@@ -96,7 +96,7 @@ static class PlayerControllerBPatch
         }
         else if (!__instance.isInsideFactory && !__instance.isInHangarShipRoom)
         {
-            (EnemyType? enemySpawnedType, NetworkObjectReference? networkObjectReference) = GameManager.SpawnRandomEnemy(roundManager: RoundManagerPatch.Instance, inside: false, position: grabbedObjectResult.transform.position, exclusion: ["mech", "worm", "dog", "double"]);
+            (EnemyType? enemySpawnedType, NetworkObjectReference? networkObjectReference) = GameManager.SpawnRandomEnemy(roundManager: RoundManagerPatch.Instance, inside: false, position: grabbedObjectResult.transform.position, exclusion: ["RedLocust", "mech", "worm", "dog", "double"]);
 
             if (enemySpawnedType == null)
             {
