@@ -5,6 +5,13 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
 
+## [1.3.0] - 9/21/2024
+
+Make it more fair
+
+### Changed
+- Exclude many things that can one kill or easily kill you from random chance spawning when picking up item
+
 ## [1.2.9] - 9/21/2024
 
 Make it more fair
