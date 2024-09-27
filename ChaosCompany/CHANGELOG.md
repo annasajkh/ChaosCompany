@@ -5,6 +5,14 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
 
+
+## [1.3.1] - 9/27/2024
+
+Remove random sinking speed for quicksand cuz it's not fun
+
+### Changed
+- Remove random sinking speed for quicksand cuz it's not fun
+
 ## [1.3.0] - 9/21/2024
 
 Make it more fair

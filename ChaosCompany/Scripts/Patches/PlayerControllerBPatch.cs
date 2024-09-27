@@ -14,18 +14,6 @@ static class PlayerControllerBPatch
     public static bool isEnemyAlreadySpawnedOnItemPosition;
 
     [HarmonyPrefix]
-    [HarmonyPatch("StartSinkingServerRpc")]
-    static void StartSinkingServerRpcPrefix(ref float sinkingSpeed, ref int audioClipIndex)
-    {
-        if (!NetworkManager.Singleton.IsServer)
-        {
-            return;
-        }
-
-        sinkingSpeed *= Random.Range(0.25f, 2f);
-    }
-
-    [HarmonyPrefix]
     [HarmonyPatch("DamagePlayerServerRpc")]
     static void DamagePlayerServerRpcPrefix(ref int damageNumber,ref int newHealthAmount)
     {
