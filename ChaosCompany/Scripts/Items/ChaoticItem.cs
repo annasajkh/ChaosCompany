@@ -13,7 +13,7 @@ public class ChaoticItem : Chaotic
 
     public ChaoticItem(RoundManager roundManager) : base(roundManager)
     {
-        changeType = new(waitTime: 1, oneshot: false);
+        changeType = new(waitTime: Plugin.ChaoticItemSwitchPriceTime, oneshot: false);
         changeType.OnTimeout += () =>
         {
             if (NetworkObject == null)
@@ -37,7 +37,7 @@ public class ChaoticItem : Chaotic
                     }
                 }
 
-                grabbableObject.scrapValue = Random.Range(10, 150);
+                grabbableObject.scrapValue = Random.Range(Plugin.MinChaoticItemPrice, Plugin.MaxChaoticItemPrice);
             }
         };
 
@@ -94,7 +94,7 @@ public class ChaoticItem : Chaotic
 
         grabbableObjectComponent.transform.rotation = Quaternion.Euler(grabbableObjectComponent.itemProperties.restingRotation);
         grabbableObjectComponent.fallTime = 0;
-        grabbableObjectComponent.scrapValue = Random.Range(5, 150);
+        grabbableObjectComponent.scrapValue = Random.Range(Plugin.MinChaoticItemPrice, Plugin.MaxChaoticItemPrice);
 
         grabbableObjectComponent.NetworkObject.Spawn();
 

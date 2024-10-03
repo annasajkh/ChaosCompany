@@ -105,7 +105,7 @@ public static class GameManager
         numberOfTriesOfSpawningRandomEnemyNearPlayer = 6;
     }
 
-    public static (EnemyType?, NetworkObjectReference?) SpawnRandomEnemy(RoundManager roundManager, bool inside, Vector3 position, float yRotation = 0, string[]? exclusion = null)
+    public static (EnemyType?, NetworkObjectReference?) SpawnRandomEnemy(RoundManager roundManager, bool inside, Vector3 position, float yRotation = 0, List<string>? exclusion = null)
     {
         Plugin.Logger.LogError("Trying to spawn random enemy");
 
@@ -143,6 +143,8 @@ public static class GameManager
 
         if (exclusion is not null)
         {
+            exclusion.AddRange(Plugin.ModSpawnEnemyExclusionList);
+
             // check if enemyToSpawn.enemyType is in the exclusion list
             foreach (var enemyExclusionName in exclusion)
             {
@@ -184,7 +186,7 @@ public static class GameManager
                     string enemySpawnedOtherName = enemyToSpawn.enemyType.enemyName.ToLower().Trim();
                     string enemySpawnedOtherOtherName = enemyToSpawn.enemyType.ToString().ToLower().Trim();
 
-                    if (enemySpawnedName.Contains(enemyExclusionName.ToLower().Trim()) || enemySpawnedOtherName.Contains(enemyExclusionName.ToLower().Trim()) || enemySpawnedOtherOtherName.Contains(enemyExclusionName.ToLower().Trim()))
+                    if (enemySpawnedName.Contains(enemyExclusionName.ToLower().Trim()) || enemySpawnedOtherName.Contains(enemyExclusionName.ToLower().Trim()) || enemySpawnedOtherOtherName.Contains(enemyExclusionName.ToLower().Trim()) || enemySpawnedName == enemyExclusionName)
                     {
 #if DEBUG
                         Plugin.Logger.LogError($"Prevent spawning {enemyToSpawn.enemyType.name} aka {enemyToSpawn.enemyType.enemyName}");
@@ -411,7 +413,7 @@ public static class GameManager
             if (inside)
             {
                 // Time to be silly
-                (EnemyType? enemySpawnedType, NetworkObjectReference? networkObjectReference) = SpawnRandomEnemy(roundManager, inside: true, position: targetPositionPrevious, exclusion: ["DressGirl"]);
+                (EnemyType? enemySpawnedType, NetworkObjectReference? networkObjectReference) = SpawnRandomEnemy(roundManager, inside: true, position: targetPositionPrevious, exclusion: Plugin.SpawnEnemyNearPlayerExclusionListInside);
 
                 if (enemySpawnedType == null)
                 {
@@ -424,7 +426,7 @@ public static class GameManager
             else
             {
                 // Time to be silly
-                (EnemyType? enemySpawnedType, NetworkObjectReference? networkObjectReference) = SpawnRandomEnemy(roundManager, inside: false, position: targetPositionPrevious, exclusion: ["mech", "worm", "double"]);
+                (EnemyType? enemySpawnedType, NetworkObjectReference? networkObjectReference) = SpawnRandomEnemy(roundManager, inside: false, position: targetPositionPrevious, exclusion: Plugin.SpawnEnemyNearPlayerExclusionListOutside);
 
                 if (enemySpawnedType == null)
                 {
@@ -495,7 +497,7 @@ public static class GameManager
 
         #endregion
 
-        (EnemyType? enemySpawnedType, NetworkObjectReference? networkObjectReference) = SpawnRandomEnemy(roundManager, inside: inside, position: enemyTarget.thisNetworkObject.transform.position, exclusion: ["cave", "double", "redlocust", "DressGirl", "Nutcracker", "Spider"]);
+        (EnemyType? enemySpawnedType, NetworkObjectReference? networkObjectReference) = SpawnRandomEnemy(roundManager, inside: inside, position: enemyTarget.thisNetworkObject.transform.position, exclusion: Plugin.ChaoticEnemySwitchExclusionList);
 
         if (enemySpawnedType == null)
         {
@@ -658,35 +660,17 @@ public static class GameManager
                         float y = ventToSpawnEnemy.floorNode.eulerAngles.y;
 
 
-                        if (Random.Range(0.0f, 1.0f) <= 0.5f)
+                        (EnemyType? enemySpawnedType, NetworkObjectReference? networkObjectReference) = SpawnRandomEnemy(roundManager, inside: true, position, yRotation: y);
+
+                        if (enemySpawnedType == null)
                         {
-                            (EnemyType? enemySpawnedType, NetworkObjectReference? networkObjectReference) = SpawnRandomEnemy(roundManager, inside: true, position, yRotation: y);
-
-                            if (enemySpawnedType == null)
-                            {
-                                return;
-                            }
-
-                            ventToSpawnEnemy.OpenVentClientRpc();
-#if DEBUG
-                            Plugin.Logger.LogError($"Spawning {enemySpawnedType} inside");
-#endif   
+                            return;
                         }
-                        else
-                        {
-                            (EnemyType? enemySpawnedType, NetworkObjectReference? networkObjectReference) = SpawnRandomEnemy(roundManager, inside: false, position, exclusion: ["giant", "worm", "double"]);
 
-                            if (enemySpawnedType == null)
-                            {
-                                Plugin.Logger.LogError($"Cannot spawn enemy inside");
-                                return;
-                            }
-
-                            ventToSpawnEnemy.OpenVentClientRpc();
+                        ventToSpawnEnemy.OpenVentClientRpc();
 #if DEBUG
-                            Plugin.Logger.LogError($"Spawning {enemySpawnedType} inside");
+                        Plugin.Logger.LogError($"Spawning {enemySpawnedType} inside");
 #endif
-                        }
 
                         modEnemyNumber++;
                         break;
@@ -725,7 +709,7 @@ public static class GameManager
                         position = roundManager.GetRandomNavMeshPositionInBoxPredictable(spawnPosition, 10f, default(NavMeshHit), roundManager.AnomalyRandom, roundManager.GetLayermaskForEnemySizeLimit(outsideEnemyToSpawn.enemyType));
                         position = roundManager.PositionWithDenialPointsChecked(position, spawnPoints, outsideEnemyToSpawn.enemyType);
 
-                        roundManager.SpawnEnemyGameObject(position, 0, -1, outsideEnemyToSpawn.enemyType);
+                        SpawnRandomEnemy(roundManager, false, position);
 #if DEBUG
                         Plugin.Logger.LogError($"Spawning {outsideEnemyToSpawn.enemyType.enemyName} Outside");
 #endif

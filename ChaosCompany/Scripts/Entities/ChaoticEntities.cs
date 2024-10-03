@@ -1,5 +1,6 @@
 ﻿using ChaosCompany.Scripts.Abstracts;
 using ChaosCompany.Scripts.Managers;
+using System.Collections.Generic;
 using Unity.Netcode;
 using UnityEngine;
 
@@ -10,11 +11,11 @@ public class ChaoticEntities : Chaotic
     public EnemyAI? EnemyAI { get; protected set; }
 
     protected string kindString;
-    string[]? exclusion;
+    List<string>? exclusion;
 
     public bool Inside { get; protected set; }
 
-    public ChaoticEntities(RoundManager roundManager, bool inside, string[]? exclusion) : base(roundManager)
+    public ChaoticEntities(RoundManager roundManager, bool inside, List<string>? exclusion) : base(roundManager)
     {
         this.exclusion = exclusion;
 

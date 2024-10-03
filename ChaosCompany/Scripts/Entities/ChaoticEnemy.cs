@@ -10,9 +10,9 @@ public class ChaoticEnemy : ChaoticEntities
     Timer changeType;
     bool isChaoticEnemyAlreadyTryingToChange;
 
-    public ChaoticEnemy(RoundManager roundManager, bool inside) : base(roundManager, inside, ["DocileLocust", "CaveDweller", "DressGirl", "Nutcracker", "Spider", "double", "Red"])
+    public ChaoticEnemy(RoundManager roundManager, bool inside) : base(roundManager, inside, Plugin.ChaoticEnemySwitchExclusionList)
     {
-        changeType = new(waitTime: 10, oneshot: false);
+        changeType = new(waitTime: Plugin.ChaoticEnemySwitchTime, oneshot: false);
 
         changeType.OnTimeout += () =>
         {

@@ -77,7 +77,7 @@ static class PlayerControllerBPatch
 
         if (__instance.isInsideFactory)
         {
-            (EnemyType? enemySpawnedType, NetworkObjectReference? networkObjectReference) = GameManager.SpawnRandomEnemy(roundManager: RoundManagerPatch.Instance, inside: true, position: grabbedObjectResult.transform.position, exclusion: ["Masked", "Spring", "Flowerman", "ClaySurgeon", "DressedGirl", "NutCracker", Plugin.SpawnEnemyOnItemExclusionListInside1!, Plugin.SpawnEnemyOnItemExclusionListInside2!, Plugin.SpawnEnemyOnItemExclusionListInside3!, Plugin.SpawnEnemyOnItemExclusionListInside4!, Plugin.SpawnEnemyOnItemExclusionListInside5!]);
+            (EnemyType? enemySpawnedType, NetworkObjectReference? networkObjectReference) = GameManager.SpawnRandomEnemy(roundManager: RoundManagerPatch.Instance, inside: true, position: grabbedObjectResult.transform.position, exclusion: Plugin.SpawnEnemyOnItemExclusionListInside);
 
             if (enemySpawnedType == null)
             {
@@ -90,8 +90,7 @@ static class PlayerControllerBPatch
         }
         else if (!__instance.isInsideFactory && !__instance.isInHangarShipRoom)
         {
-            (EnemyType? enemySpawnedType, NetworkObjectReference? networkObjectReference) = GameManager.SpawnRandomEnemy(roundManager: RoundManagerPatch.Instance, inside: false, position: grabbedObjectResult.transform.position, exclusion: ["RedLocust", "Mech", "Worm", "Dog", "Double", Plugin.SpawnEnemyOnItemExclusionListOutside1!, Plugin.SpawnEnemyOnItemExclusionListOutside2!, Plugin.SpawnEnemyOnItemExclusionListOutside3!, Plugin.SpawnEnemyOnItemExclusionListOutside4!, Plugin.SpawnEnemyOnItemExclusionListOutside5!]);
-
+            (EnemyType? enemySpawnedType, NetworkObjectReference? networkObjectReference) = GameManager.SpawnRandomEnemy(roundManager: RoundManagerPatch.Instance, inside: false, position: grabbedObjectResult.transform.position, exclusion: Plugin.SpawnEnemyOnItemExclusionListOutside);
             if (enemySpawnedType == null)
             {
                 return;

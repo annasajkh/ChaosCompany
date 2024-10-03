@@ -20,7 +20,7 @@ public class MoveEnemy : ChaoticEntities
     string playerUsername = "";
     string previousPlayerUsername = "";
 
-    public MoveEnemy(RoundManager roundManager, bool inside) : base(roundManager, inside, ["forest", "RedLocust", "Doublewing", "FlowerSnake", "DocileLocust", "double", "Centipede", "puffer", "CaveDweller"])
+    public MoveEnemy(RoundManager roundManager, bool inside) : base(roundManager, inside, Plugin.MoveEnemySpawnExclusionList)
     {
         findClosestPlayerDelay = new Timer(waitTime: 1, false);
 
