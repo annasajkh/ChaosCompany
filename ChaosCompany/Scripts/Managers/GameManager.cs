@@ -26,17 +26,17 @@ public static class GameManager
     public static List<Timer> Timers { get; private set; } = new();
     public static bool gameOver;
 
-    public static Timer spawnEnemyTimer = new(waitTime: Random.Range(60 * 3, 60 * 4), oneshot: false);
+    public static Timer? spawnEnemyTimer;
     public static EnemySpawnType[] spawnTypes = [EnemySpawnType.Inside, EnemySpawnType.Outside];
 
     public static List<Chaotic> chaoticEntities = new();
 
-    public static int numberOfTriesOfSpawningRandomEnemyNearPlayer = 6;
-    public static int modMaxEnemyNumber = Random.Range(2, 4);
-    public static int modEnemyNumber = 0;
-    public static int maxChaoticEnemySpawn = 2;
-    public static int maxMoveEnemySpawn = 2;
-    public static int maxChaoticItemSpawn = Random.Range(2, 5);
+    public static int numberOfTriesOfSpawningRandomEnemyNearPlayer;
+    public static int modMaxEnemyNumber;
+    public static int modEnemyNumber;
+    public static int maxChaoticEnemySpawn;
+    public static int maxMoveEnemySpawn;
+    public static int maxChaoticItemSpawn;
 
     public static bool beginChaos;
 
@@ -95,17 +95,17 @@ public static class GameManager
         chaoticEntities.Clear();
         modEnemyNumber = 0;
 
-        maxChaoticItemSpawn = Random.Range(2, 5);
-        spawnEnemyTimer = new(waitTime: 60 * 3, oneshot: false);
-        modMaxEnemyNumber = Random.Range(2, 4);
-        maxChaoticEnemySpawn = 2;
-        maxMoveEnemySpawn = 2;
+        maxChaoticItemSpawn = Random.Range(Plugin.MinChaoticItemSpawnNumber, Plugin.MaxChaoticItemSpawnNumber);
+        spawnEnemyTimer = new(waitTime: Plugin.SpawnEnemyInterval, oneshot: false);
+        modMaxEnemyNumber = Random.Range(Plugin.MinEnemySpawnNumber, Plugin.MaxChaoticEnemySpawn);
+        maxChaoticEnemySpawn = Plugin.MaxChaoticEnemySpawn;
+        maxMoveEnemySpawn = Plugin.MaxMoveEnemySpawn;
 
         beginChaos = false;
         numberOfTriesOfSpawningRandomEnemyNearPlayer = 6;
     }
 
-    public static (EnemyType?, NetworkObjectReference?) SpawnRandomEnemy(RoundManager roundManager, bool inside, Vector3 position, float yRotation = 0, List<string>? exclusion = null)
+    public static (EnemyType?, NetworkObjectReference?) SpawnRandomEnemy(RoundManager roundManager, bool inside, Vector3 position, float yRotation = 0, string[]? exclusion = null)
     {
         Plugin.Logger.LogError("Trying to spawn random enemy");
 
@@ -550,6 +550,11 @@ public static class GameManager
             return;
         }
 
+        if (spawnEnemyTimer is null)
+        {
+            return;
+        }
+
         spawnEnemyTimer.OnTimeout += () =>
         {
             if (modEnemyNumber >= modMaxEnemyNumber)
@@ -603,7 +608,7 @@ public static class GameManager
             {
                 roundManager.SwitchPower(false);
 
-                int powerOutageDuration = Random.Range(30, 60 * 3);
+                int powerOutageDuration = Random.Range(Plugin.MinPowerOutageDuration, Plugin.MaxPowerOutageDuration);
 
                 HUDManager.Instance.AddTextToChatOnServer($"Warning: There is a power outage for {TimeSpan.FromSeconds(powerOutageDuration).ToString(@"mm\:ss")}");
 

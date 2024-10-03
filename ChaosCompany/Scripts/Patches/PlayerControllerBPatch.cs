@@ -4,6 +4,7 @@ using GameNetcodeStuff;
 using HarmonyLib;
 using Unity.Netcode;
 using UnityEngine;
+using Weighted_Randomizer;
 using Timer = ChaosCompany.Scripts.Components.Timer;
 
 namespace ChaosCompany.Scripts.Patches;
@@ -64,14 +65,19 @@ static class PlayerControllerBPatch
             return;
         }
 
-        if (Random.Range(0, 100) != 0)
+        StaticWeightedRandomizer<bool> chanceNotSpawnEnemyOnItem = new();
+
+        chanceNotSpawnEnemyOnItem.Add(true, Plugin.ChanceOfSpawnEnemyOnItem);
+        chanceNotSpawnEnemyOnItem.Add(false, 100 - Plugin.ChanceOfSpawnEnemyOnItem);
+
+        if (chanceNotSpawnEnemyOnItem.NextWithReplacement())
         {
             return;
         }
 
         if (__instance.isInsideFactory)
         {
-            (EnemyType? enemySpawnedType, NetworkObjectReference? networkObjectReference) = GameManager.SpawnRandomEnemy(roundManager: RoundManagerPatch.Instance, inside: true, position: grabbedObjectResult.transform.position, exclusion: ["Masked", "Spring", "Flowerman", "ClaySurgeon", "dressedgirl", "nutcracker"]);
+            (EnemyType? enemySpawnedType, NetworkObjectReference? networkObjectReference) = GameManager.SpawnRandomEnemy(roundManager: RoundManagerPatch.Instance, inside: true, position: grabbedObjectResult.transform.position, exclusion: ["Masked", "Spring", "Flowerman", "ClaySurgeon", "DressedGirl", "NutCracker", Plugin.SpawnEnemyOnItemExclusionListInside1!, Plugin.SpawnEnemyOnItemExclusionListInside2!, Plugin.SpawnEnemyOnItemExclusionListInside3!, Plugin.SpawnEnemyOnItemExclusionListInside4!, Plugin.SpawnEnemyOnItemExclusionListInside5!]);
 
             if (enemySpawnedType == null)
             {
@@ -84,7 +90,7 @@ static class PlayerControllerBPatch
         }
         else if (!__instance.isInsideFactory && !__instance.isInHangarShipRoom)
         {
-            (EnemyType? enemySpawnedType, NetworkObjectReference? networkObjectReference) = GameManager.SpawnRandomEnemy(roundManager: RoundManagerPatch.Instance, inside: false, position: grabbedObjectResult.transform.position, exclusion: ["RedLocust", "mech", "worm", "dog", "double"]);
+            (EnemyType? enemySpawnedType, NetworkObjectReference? networkObjectReference) = GameManager.SpawnRandomEnemy(roundManager: RoundManagerPatch.Instance, inside: false, position: grabbedObjectResult.transform.position, exclusion: ["RedLocust", "Mech", "Worm", "Dog", "Double", Plugin.SpawnEnemyOnItemExclusionListOutside1!, Plugin.SpawnEnemyOnItemExclusionListOutside2!, Plugin.SpawnEnemyOnItemExclusionListOutside3!, Plugin.SpawnEnemyOnItemExclusionListOutside4!, Plugin.SpawnEnemyOnItemExclusionListOutside5!]);
 
             if (enemySpawnedType == null)
             {

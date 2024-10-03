@@ -95,6 +95,11 @@ static class RoundManagerPatch
 
                 GameManager.Timers.Add(spawnChaoticItemTimer);
 
+                if (GameManager.spawnEnemyTimer is null)
+                {
+                    return;
+                }
+
                 GameManager.spawnEnemyTimer.Start();
                 GameManager.beginChaos = true;
             }
@@ -113,7 +118,7 @@ static class RoundManagerPatch
         // this is a hack but it's fine, i'm just tired
         if (TimeOfDayPatch.Instance is not null)
         {
-            TimeOfDayPatch.Instance.quotaVariables.deadlineDaysAmount = Random.Range(4, 7);
+            TimeOfDayPatch.Instance.quotaVariables.deadlineDaysAmount = Random.Range(Plugin.MinDayBeforeDeadline, Plugin.MaxDayBeforeDeadline + 1);
         }
 
         GameManager.gameOver = true;

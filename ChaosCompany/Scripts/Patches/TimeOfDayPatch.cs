@@ -21,12 +21,12 @@ static class TimeOfDayPatch
         // my precious little hack
         if (Instance == null)
         {
-            __instance.quotaVariables.deadlineDaysAmount = Random.Range(4, 7);
+            __instance.quotaVariables.deadlineDaysAmount = Random.Range(Plugin.MinDayBeforeDeadline, Plugin.MaxDayBeforeDeadline + 1);
             __instance.SyncTimeClientRpc(__instance.globalTime, (int)__instance.timeUntilDeadline);
         }
 
         Instance = __instance;
 
-        __instance.globalTimeSpeedMultiplier = Random.Range(0.5f, 1.25f);
+        __instance.globalTimeSpeedMultiplier = Random.Range(Plugin.MinTimeMultiplier, Plugin.MaxTimeMultiplier);
     }
 }

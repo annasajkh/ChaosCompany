@@ -20,7 +20,7 @@ public class GameNetworkManagerPatch
         // this is a hack but it's fine, i'm just tired
         if (TimeOfDayPatch.Instance is not null)
         {
-            TimeOfDayPatch.Instance.quotaVariables.deadlineDaysAmount = Random.Range(4, 7);
+            TimeOfDayPatch.Instance.quotaVariables.deadlineDaysAmount = Random.Range(Plugin.MinDayBeforeDeadline, Plugin.MaxDayBeforeDeadline + 1);
         }
 
         GameManager.gameOver = true;

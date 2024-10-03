@@ -12,7 +12,7 @@ static class DepositItemsDeskPatch
 {
     public static HashSet<float> soundVolumes = new();
     static int timesHearingNoise = 0;
-    public static Timer consecutiveNoiseDelay = new(waitTime: 3, oneshot: false);
+    public static Timer consecutiveNoiseDelay = new(waitTime: Plugin.CompanyMonsterConsecutiveNoiseDelay, oneshot: false);
 
     [HarmonyPostfix]
     [HarmonyPatch("Start")]
@@ -75,11 +75,11 @@ static class DepositItemsDeskPatch
             consecutiveNoiseDelay.Stop();
         };
 
-        if (timesHearingNoise > 1 * 2 && timesHearingNoise < 4 * 2)
+        if (timesHearingNoise > Plugin.CompanyMonsterTimesHeardNoiseBeforeWarning * 2 && timesHearingNoise < Plugin.CompanyMonsterTimesHeardNoiseBeforeAttack * 2)
         {
             __instance.MakeWarningNoiseClientRpc();
         }
-        else if (timesHearingNoise >= 4 * 2)
+        else if (timesHearingNoise >= Plugin.CompanyMonsterTimesHeardNoiseBeforeAttack * 2)
         {
             __instance.AttackPlayersServerRpc();
             timesHearingNoise = 0;

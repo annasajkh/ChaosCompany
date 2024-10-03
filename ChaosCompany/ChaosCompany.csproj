@@ -4,7 +4,7 @@
         <TargetFramework>netstandard2.1</TargetFramework>
         <AssemblyName>ChaosCompany</AssemblyName>
         <Description>It's unpredictable chaos can you survive?</Description>
-        <Version>1.3.1</Version>
+        <Version>1.3.2</Version>
         <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
         <LangVersion>latest</LangVersion>
         <Nullable>enable</Nullable>
@@ -22,6 +22,7 @@
         <PackageReference Include="BepInEx.Core" Version="5.*" />
         <PackageReference Include="BepInEx.PluginInfoProps" Version="1.*" />
         <PackageReference Include="UnityEngine.Modules" Version="2022.3.9" IncludeAssets="compile" />
+        <PackageReference Include="WeightedRandomizer" Version="2.0.1" />
     </ItemGroup>
 
     <!--<PropertyGroup>
