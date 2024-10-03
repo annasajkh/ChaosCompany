@@ -75,11 +75,12 @@ static class DepositItemsDeskPatch
             consecutiveNoiseDelay.Stop();
         };
 
-        if (timesHearingNoise > Plugin.CompanyMonsterTimesHeardNoiseBeforeWarning * 2 && timesHearingNoise < Plugin.CompanyMonsterTimesHeardNoiseBeforeAttack * 2)
+        if (timesHearingNoise + 1 >= Plugin.CompanyMonsterTimesHeardNoiseBeforeWarning * 2)
         {
             __instance.MakeWarningNoiseClientRpc();
         }
-        else if (timesHearingNoise >= Plugin.CompanyMonsterTimesHeardNoiseBeforeAttack * 2)
+        
+        if (timesHearingNoise + 1 >= Plugin.CompanyMonsterTimesHeardNoiseBeforeAttack * 2)
         {
             __instance.AttackPlayersServerRpc();
             timesHearingNoise = 0;

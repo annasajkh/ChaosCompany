@@ -83,8 +83,8 @@ public class Plugin : BaseUnityPlugin
         MinTimeMultiplier = Config.Bind("Time", "Min time multiplier", 0.5f, "Minimum value for the time multiplier, the final result will be random between the minimum and the maximum").Value;
         MaxTimeMultiplier = Config.Bind("Time", "Max time multiplier", 1.25f, "Maximum value for the time multiplier, the final result will be random between the minimum and the maximum").Value;
 
-        CompanyMonsterTimesHeardNoiseBeforeWarning = Config.Bind("Company Monster", "Times heard noise before warning", 1, "The company monster noise hearing times before warning, signified by growling and camera shaking").Value;
-        CompanyMonsterTimesHeardNoiseBeforeAttack = Config.Bind("Company Monster", "Times heard noise before attack", 4, "The company monster noise hearing times before attacking").Value;
+        CompanyMonsterTimesHeardNoiseBeforeWarning = Config.Bind("Company Monster", "Times heard noise before warning", 3, "The company monster noise hearing times before warning, signified by growling and camera shaking").Value;
+        CompanyMonsterTimesHeardNoiseBeforeAttack = Config.Bind("Company Monster", "Times heard noise before attack", 6, "The company monster noise hearing times before attacking").Value;
         CompanyMonsterConsecutiveNoiseDelay = Config.Bind("Company Monster", "Consecutive noise delay", 3, "The company monster delay in seconds if it doesn't hear noises with this amount of time it will reset the TimesHeardNoise to 0").Value;
 
         MinPowerOutageDuration = Config.Bind("Power outage", "Min duration", 30, "The minimum duration for power outage, the final result will be random between the minimum and the maximum").Value;

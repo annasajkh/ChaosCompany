@@ -2,9 +2,9 @@
 using ChaosCompany.Scripts.Managers;
 using GameNetcodeStuff;
 using HarmonyLib;
+using KaimiraGames;
 using Unity.Netcode;
 using UnityEngine;
-using Weighted_Randomizer;
 using Timer = ChaosCompany.Scripts.Components.Timer;
 
 namespace ChaosCompany.Scripts.Patches;
@@ -65,12 +65,12 @@ static class PlayerControllerBPatch
             return;
         }
 
-        StaticWeightedRandomizer<bool> chanceNotSpawnEnemyOnItem = new();
+        WeightedList<bool> chanceNotSpawnEnemyOnItem = new();
 
-        chanceNotSpawnEnemyOnItem.Add(true, Plugin.ChanceOfSpawnEnemyOnItem);
-        chanceNotSpawnEnemyOnItem.Add(false, 100 - Plugin.ChanceOfSpawnEnemyOnItem);
+        chanceNotSpawnEnemyOnItem.Add(true, 100 - Plugin.ChanceOfSpawnEnemyOnItem);
+        chanceNotSpawnEnemyOnItem.Add(false,Plugin.ChanceOfSpawnEnemyOnItem);
 
-        if (chanceNotSpawnEnemyOnItem.NextWithReplacement())
+        if (chanceNotSpawnEnemyOnItem.Next())
         {
             return;
         }

@@ -135,6 +135,10 @@ public static class GameManager
 
         enemyToSpawn = enemiesTypes[Random.Range(0, enemiesCount)];
 
+#if DEBUG
+        Plugin.Logger.LogError($"Trying to spawn {enemyToSpawn.enemyType.name} aka {enemyToSpawn.enemyType.enemyName}");
+#endif
+
         bool containExclusionEnemy = false;
 
         if (exclusion is not null)
@@ -142,13 +146,16 @@ public static class GameManager
             // check if enemyToSpawn.enemyType is in the exclusion list
             foreach (var enemyExclusionName in exclusion)
             {
-                string enemySpawnedName = enemyToSpawn.enemyType.ToString().ToLower().Trim();
+                string enemySpawnedName = enemyToSpawn.enemyType.name.ToLower().Trim();
+                string enemySpawnedOtherName = enemyToSpawn.enemyType.enemyName.ToLower().Trim();
+                string enemySpawnedOtherOtherName = enemyToSpawn.enemyType.ToString().ToLower().Trim();
+
                 string enemyExclusionNameTemp = enemyExclusionName.ToLower().Trim();
 
-                if (enemySpawnedName.Contains(enemyExclusionNameTemp) || enemySpawnedName == enemyExclusionNameTemp)
+                if (enemySpawnedName.Contains(enemyExclusionNameTemp) || enemySpawnedOtherName.Contains(enemyExclusionNameTemp) || enemySpawnedOtherOtherName.Contains(enemyExclusionNameTemp) || enemySpawnedName == enemyExclusionNameTemp)
                 {
 #if DEBUG
-                    Plugin.Logger.LogError($"Prevent spawning {enemyToSpawn.enemyType.enemyName}");
+                    Plugin.Logger.LogError($"Prevent spawning {enemyToSpawn.enemyType} aka {enemyToSpawn.enemyType.enemyName}");
 #endif
                     containExclusionEnemy = true;
                     break;
@@ -173,12 +180,14 @@ public static class GameManager
 
                 foreach (var enemyExclusionName in exclusion)
                 {
-                    string enemySpawnedName = enemyToSpawn.enemyType.ToString().ToLower().Trim();
+                    string enemySpawnedName = enemyToSpawn.enemyType.name.ToLower().Trim();
+                    string enemySpawnedOtherName = enemyToSpawn.enemyType.enemyName.ToLower().Trim();
+                    string enemySpawnedOtherOtherName = enemyToSpawn.enemyType.ToString().ToLower().Trim();
 
-                    if (enemySpawnedName.Contains(enemyExclusionName.ToLower().Trim()))
+                    if (enemySpawnedName.Contains(enemyExclusionName.ToLower().Trim()) || enemySpawnedOtherName.Contains(enemyExclusionName.ToLower().Trim()) || enemySpawnedOtherOtherName.Contains(enemyExclusionName.ToLower().Trim()))
                     {
 #if DEBUG
-                        Plugin.Logger.LogError($"Prevent spawning {enemyToSpawn.enemyType.enemyName}");
+                        Plugin.Logger.LogError($"Prevent spawning {enemyToSpawn.enemyType.name} aka {enemyToSpawn.enemyType.enemyName}");
 #endif
                         containExclusionEnemy = true;
                         break;

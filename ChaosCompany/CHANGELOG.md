@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [1.3.3] - 10/3/2024
+
+Fix a bunch of stuff
+
+### Changed
+- Fix many broken user configuration
+
 ## [1.3.2] - 10/3/2024
 
 add user configuration
