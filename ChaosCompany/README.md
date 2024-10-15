@@ -1,5 +1,6 @@
 # ChaosCompany
 It's unpredictable chaos can you survive?
+This is server sided mod so other people can join without having the mod
 
 
 What did i add / change

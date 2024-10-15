@@ -81,6 +81,10 @@ static class RoundManagerPatch
                 GameManager.StartSpawning(Instance);
                 Plugin.Logger.LogError("Chaos is starting");
 
+                TimeOfDay.Instance.globalTimeSpeedMultiplier = Random.Range(Plugin.MinTimeMultiplier, Plugin.MaxTimeMultiplier);
+
+                GameManager.ChanceOfSameEnemyDay(Instance);
+
                 Timer spawnChaoticItemTimer = new(waitTime: 5, true);
 
                 spawnChaoticItemTimer.OnTimeout += () =>
@@ -99,7 +103,7 @@ static class RoundManagerPatch
                 {
                     return;
                 }
-
+                
                 GameManager.spawnEnemyTimer.Start();
                 GameManager.beginChaos = true;
             }

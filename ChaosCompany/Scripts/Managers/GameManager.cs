@@ -12,6 +12,7 @@ using UnityEngine.AI;
 using Random = UnityEngine.Random;
 using ChaosCompany.Scripts.Entities;
 using ChaosCompany.Scripts.Items;
+using KaimiraGames;
 
 namespace ChaosCompany.Scripts.Managers;
 
@@ -103,6 +104,32 @@ public static class GameManager
 
         beginChaos = false;
         numberOfTriesOfSpawningRandomEnemyNearPlayer = 6;
+    }
+
+    public static void ChanceOfSameEnemyDay(RoundManager roundManager)
+    {
+        WeightedList<bool> sameDayEnemy = new();
+
+        sameDayEnemy.Add(true, Plugin.ChanceOfSameDayEnemy);
+        sameDayEnemy.Add(false, 100 - Plugin.ChanceOfSameDayEnemy);
+
+        if (sameDayEnemy.Next())
+        {
+            SpawnableEnemyWithRarity choosenInsideEnemy = roundManager.currentLevel.Enemies[Random.Range(0, roundManager.currentLevel.Enemies.Count)];
+            SpawnableEnemyWithRarity choosenOutsideEnemy = roundManager.currentLevel.OutsideEnemies[Random.Range(0, roundManager.currentLevel.OutsideEnemies.Count)];
+
+            HUDManager.Instance.AddTextToChatOnServer($"It's {choosenInsideEnemy.enemyType.enemyName} and {choosenOutsideEnemy.enemyType.enemyName}  day!");
+
+            for (int i = 0; i < roundManager.currentLevel.Enemies.Count; i++)
+            {
+                roundManager.currentLevel.Enemies[i] = choosenInsideEnemy;
+            }
+
+            for (int i = 0; i < roundManager.currentLevel.OutsideEnemies.Count; i++)
+            {
+                roundManager.currentLevel.OutsideEnemies[i] = choosenOutsideEnemy;
+            }
+        }
     }
 
     public static (EnemyType?, NetworkObjectReference?) SpawnRandomEnemy(RoundManager roundManager, bool inside, Vector3 position, float yRotation = 0, List<string>? exclusion = null)
@@ -568,6 +595,7 @@ public static class GameManager
 
         spawnEnemyTimer.OnTimeout += () =>
         {
+            Console.WriteLine("spawning enemy");
             if (modEnemyNumber >= modMaxEnemyNumber)
             {
                 spawnEnemyTimer.Stop();

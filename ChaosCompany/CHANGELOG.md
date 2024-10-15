@@ -4,6 +4,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [1.3.5] - 10/16/2024
+
+Add and fix stuff
+
+### Changed
+- Add same enemy day
+- Fix time multiplier doesn't work
+
 ## [1.3.4] - 10/3/2024
 
 Add more user configuration

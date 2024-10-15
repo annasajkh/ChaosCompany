@@ -29,7 +29,7 @@ public class Plugin : BaseUnityPlugin
     public static List<string>? ModSpawnEnemyExclusionList { get; private set; }
 
     public static int ChanceOfSpawnEnemyOnItem { get; private set; }
-    
+
     public static List<string>? SpawnEnemyOnItemExclusionListInside { get; private set; }
     public static List<string>? SpawnEnemyOnItemExclusionListOutside { get; private set; }
 
@@ -57,6 +57,7 @@ public class Plugin : BaseUnityPlugin
 
     public static float ChaoticItemSwitchPriceTime { get; private set; }
 
+    public static int ChanceOfSameDayEnemy { get; private set; }
 
     public static List<string>? SpawnEnemyNearPlayerExclusionListInside { get; private set; }
     public static List<string>? SpawnEnemyNearPlayerExclusionListOutside { get; private set; }
@@ -107,6 +108,8 @@ public class Plugin : BaseUnityPlugin
 
         SpawnEnemyNearPlayerExclusionListInside = Config.Bind("Spawn Enemy Near Player", "Inside exclusion", "DressGirl", "The spawn exclusion of a chance of spawning enemy near a player inside, The name of the enemy is the name in the code and not aliases example instead of Bracken it's FlowerMan and capitalization doesn't matter, full name also not required, comma separated").Value.ToLower().Split(',').Select(str => str.Trim()).ToList();
         SpawnEnemyNearPlayerExclusionListOutside = Config.Bind("Spawn Enemy Near Player", "Outside exclusion", "mech, worm, double", "The spawn exclusion of a chance of spawning enemy near a player outside, The name of the enemy is the name in the code and not aliases example instead of Bracken it's FlowerMan and capitalization doesn't matter, full name also not required, comma separated").Value.ToLower().Split(',').Select(str => str.Trim()).ToList();
+
+        ChanceOfSameDayEnemy = Config.Bind("Same Day Enemy", "Chance", 20, new ConfigDescription("The chance of inside and outside enemy that spawn being the same", new AcceptableValueRange<int>(0, 100))).Value;
 
         Logger.LogInfo($"Plugin {PluginInfo.PLUGIN_GUID} is loaded! yeah baby!!!");
         harmony.PatchAll(Assembly.GetExecutingAssembly());
