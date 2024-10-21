@@ -10,6 +10,8 @@ namespace ChaosCompany.Scripts.Patches;
 [HarmonyPatch(typeof(StartOfRound))]
 public class StartOfRoundPatch
 {
+    public static string? CurrentMoonName { get; private set; }
+
     [HarmonyPrefix]
     [HarmonyPatch("SceneManager_OnLoad")]
     static void SceneManager_OnLoadPatch(StartOfRound __instance, ulong clientId, ref string sceneName, ref LoadSceneMode loadSceneMode, ref AsyncOperation asyncOperation)
@@ -19,11 +21,13 @@ public class StartOfRoundPatch
             return;
         }
 
+        CurrentMoonName = sceneName;
+
         Random.InitState(__instance.randomMapSeed);
 
-        Plugin.Logger.LogError($"Game Starting with level {sceneName}");
+        Plugin.Logger.LogError($"Game Starting with level {CurrentMoonName}");
 
-        if (sceneName != "CompanyBuilding")
+        if (CurrentMoonName != "CompanyBuilding")
         {
             GameManager.gameOver = false;
         }

@@ -36,6 +36,11 @@ static class RoundManagerPatch
             return;
         }
 
+        if (StartOfRoundPatch.CurrentMoonName == "CompanyBuilding")
+        {
+            return;
+        }
+
         for (int i = GameManager.Timers.Count - 1; i >= 0; i--)
         {
             GameManager.Timers[i].Update();

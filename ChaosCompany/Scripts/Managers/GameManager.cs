@@ -134,6 +134,12 @@ public static class GameManager
 
     public static (EnemyType?, NetworkObjectReference?) SpawnRandomEnemy(RoundManager roundManager, bool inside, Vector3 position, float yRotation = 0, List<string>? exclusion = null)
     {
+        if (StartOfRoundPatch.CurrentMoonName == "CompanyBuilding")
+        {
+            Plugin.Logger.LogError("DON'T SPAWN MONSTER ON THE COMPANY BUILDING");
+            return (null, null);
+        }
+
         Plugin.Logger.LogError("Trying to spawn random enemy");
 
         List<SpawnableEnemyWithRarity> enemiesTypes;
